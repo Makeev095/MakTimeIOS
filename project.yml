@@ -1,0 +1,39 @@
+name: MakTime
+options:
+  bundleIdPrefix: com.maktime
+  deploymentTarget:
+    iOS: "16.0"
+  xcodeVersion: "15.0"
+  createIntermediateGroups: true
+  generateEmptyDirectories: true
+settings:
+  SWIFT_VERSION: "5.9"
+  TARGETED_DEVICE_FAMILY: "1"
+  INFOPLIST_FILE: MakTime/Info.plist
+packages:
+  SocketIO:
+    url: https://github.com/socketio/socket.io-client-swift
+    from: "16.1.1"
+  KeychainAccess:
+    url: https://github.com/kishikawakatsumi/KeychainAccess
+    from: "4.2.2"
+  WebRTC:
+    url: https://github.com/stasel/WebRTC
+    from: "125.0.0"
+targets:
+  MakTime:
+    type: application
+    platform: iOS
+    sources:
+      - MakTime
+    dependencies:
+      - package: SocketIO
+        product: SocketIO
+      - package: KeychainAccess
+      - package: WebRTC
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.maktime.app
+      MARKETING_VERSION: "1.0.0"
+      CURRENT_PROJECT_VERSION: "1"
+      ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+      DEVELOPMENT_TEAM: ""
