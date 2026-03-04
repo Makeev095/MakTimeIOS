@@ -10,7 +10,6 @@ class SocketService: ObservableObject {
     private var manager: SocketManager?
     private var socket: SocketIOClient?
     
-    // Publishers for events that ViewModels subscribe to
     let messageReceived = PassthroughSubject<Message, Never>()
     let messageRead = PassthroughSubject<(conversationId: String, readBy: String), Never>()
     let messageDeleted = PassthroughSubject<(messageId: String, conversationId: String), Never>()
@@ -20,7 +19,6 @@ class SocketService: ObservableObject {
     let storyAdded = PassthroughSubject<Void, Never>()
     let conversationCreated = PassthroughSubject<String, Never>()
     
-    // WebRTC signaling
     let callAccepted = PassthroughSubject<String, Never>()
     let callRejected = PassthroughSubject<Void, Never>()
     let callEnded = PassthroughSubject<Void, Never>()
@@ -29,8 +27,11 @@ class SocketService: ObservableObject {
     let webrtcAnswer = PassthroughSubject<(from: String, answer: [String: Any]), Never>()
     let webrtcIceCandidate = PassthroughSubject<(from: String, candidate: [String: Any]), Never>()
     
+    private var currentToken: String?
+    
     func connect(token: String) {
         disconnect()
+        currentToken = token
         
         guard let url = URL(string: AppConfig.socketURL) else { return }
         
@@ -39,7 +40,6 @@ class SocketService: ObservableObject {
             .compress,
             .connectParams(["token": token]),
             .forceWebsockets(true),
-            .extraHeaders(["Authorization": "Bearer \(token)"]),
         ])
         
         socket = manager?.defaultSocket
@@ -53,6 +53,7 @@ class SocketService: ObservableObject {
         manager = nil
         socket = nil
         isConnected = false
+        currentToken = nil
     }
     
     private func setupListeners() {
@@ -63,6 +64,11 @@ class SocketService: ObservableObject {
         }
         
         socket.on(clientEvent: .disconnect) { [weak self] _, _ in
+            Task { @MainActor in self?.isConnected = false }
+        }
+        
+        socket.on(clientEvent: .error) { [weak self] data, _ in
+            print("[SocketService] Error:", data)
             Task { @MainActor in self?.isConnected = false }
         }
         

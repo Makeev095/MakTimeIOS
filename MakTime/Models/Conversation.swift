@@ -30,9 +30,7 @@ struct Conversation: Codable, Identifiable, Equatable, Hashable {
     
     var lastMessageDate: Date? {
         guard let time = lastMessageTime else { return nil }
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        return formatter.date(from: time) ?? ISO8601DateFormatter().date(from: time)
+        return DateParsing.parse(time)
     }
     
     var lastMessageTimeFormatted: String {

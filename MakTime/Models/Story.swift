@@ -58,27 +58,29 @@ struct StoryUser: Codable, Identifiable, Equatable {
 struct StoryViewer: Codable, Identifiable {
     var id: String { viewerId }
     let viewerId: String
-    let username: String
     let displayName: String
+    let avatarColor: String?
     let viewedAt: String
     
     enum CodingKeys: String, CodingKey {
-        case username
-        case viewerId = "viewerId"
         case displayName = "displayName"
+        case avatarColor = "avatarColor"
         case viewedAt = "viewedAt"
+        case viewerId = "userId"
     }
 }
 
 struct StoryReaction: Codable, Identifiable {
-    let id: String
+    var id: String { "\(userId)_\(emoji)_\(createdAt ?? "")" }
     let emoji: String
     let userId: String
     let displayName: String
+    let createdAt: String?
     
     enum CodingKeys: String, CodingKey {
-        case id, emoji
+        case emoji
         case userId = "userId"
         case displayName = "displayName"
+        case createdAt = "createdAt"
     }
 }

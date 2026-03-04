@@ -103,10 +103,8 @@ class ConversationsViewModel: ObservableObject {
         do {
             let conv = try await APIService.shared.createConversation(participantId: userId)
             socketService?.joinConversation(conv.id)
-            if !conversations.contains(where: { $0.id == conv.id }) {
-                conversations.insert(conv, at: 0)
-            }
-            return conv
+            await loadConversations()
+            return conversations.first { $0.id == conv.id } ?? conv
         } catch { return nil }
     }
     

@@ -78,9 +78,22 @@ actor APIService {
         return try await get("/conversations")
     }
     
+    struct CreateConversationResponse: Codable {
+        let id: String
+        let existing: Bool?
+    }
+    
     func createConversation(participantId: String) async throws -> Conversation {
         let body: [String: Any] = ["participantId": participantId]
-        return try await post("/conversations", body: body)
+        let response: CreateConversationResponse = try await post("/conversations", body: body)
+        return Conversation(
+            id: response.id,
+            lastMessage: nil,
+            lastMessageType: nil,
+            lastMessageTime: nil,
+            unreadCount: 0,
+            participant: nil
+        )
     }
     
     func getMessages(conversationId: String) async throws -> [Message] {
@@ -126,7 +139,11 @@ actor APIService {
     
     // MARK: - Stories
     
-    func createStory(type: String, fileUrl: String, textOverlay: String, bgColor: String) async throws -> Story {
+    struct CreateStoryResponse: Codable {
+        let id: String
+    }
+    
+    func createStory(type: String, fileUrl: String, textOverlay: String, bgColor: String) async throws -> CreateStoryResponse {
         let body: [String: Any] = ["type": type, "fileUrl": fileUrl, "textOverlay": textOverlay, "bgColor": bgColor]
         return try await post("/stories", body: body)
     }
@@ -205,7 +222,8 @@ actor APIService {
             }
             
             do {
-                return try JSONDecoder().decode(T.self, from: data)
+                let decoder = JSONDecoder()
+                return try decoder.decode(T.self, from: data)
             } catch {
                 throw APIError.decodingError(error)
             }

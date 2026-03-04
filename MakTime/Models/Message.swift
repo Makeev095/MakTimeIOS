@@ -30,20 +30,14 @@ struct Message: Codable, Identifiable, Equatable {
     }
     
     var dateFormatted: String {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        guard let date = formatter.date(from: createdAt) ?? ISO8601DateFormatter().date(from: createdAt) else {
-            return createdAt
-        }
+        guard let date = DateParsing.parse(createdAt) else { return "" }
         let timeFormatter = DateFormatter()
         timeFormatter.dateFormat = "HH:mm"
         return timeFormatter.string(from: date)
     }
     
     var date: Date? {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        return formatter.date(from: createdAt) ?? ISO8601DateFormatter().date(from: createdAt)
+        DateParsing.parse(createdAt)
     }
 }
 
@@ -53,4 +47,32 @@ enum MessageType: String, Codable {
     case image
     case video
     case file
+}
+
+enum DateParsing {
+    private static let iso8601Full: ISO8601DateFormatter = {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return f
+    }()
+    
+    private static let iso8601: ISO8601DateFormatter = {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime]
+        return f
+    }()
+    
+    private static let sqlite: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        f.timeZone = TimeZone(identifier: "UTC")
+        f.locale = Locale(identifier: "en_US_POSIX")
+        return f
+    }()
+    
+    static func parse(_ string: String) -> Date? {
+        iso8601Full.date(from: string)
+            ?? iso8601.date(from: string)
+            ?? sqlite.date(from: string)
+    }
 }
