@@ -24,3 +24,25 @@ struct MakTimeApp: App {
         }
     }
 }
+
+extension UIApplication {
+    func dismissKeyboard() {
+        sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
+}
+
+extension View {
+    func hideKeyboardOnTap() -> some View {
+        self.onTapGesture {
+            UIApplication.shared.dismissKeyboard()
+        }
+    }
+    
+    func dismissKeyboardOnDrag() -> some View {
+        self.gesture(
+            DragGesture().onChanged { _ in
+                UIApplication.shared.dismissKeyboard()
+            }
+        )
+    }
+}

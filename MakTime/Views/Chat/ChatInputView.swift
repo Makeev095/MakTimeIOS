@@ -3,6 +3,7 @@ import PhotosUI
 
 struct ChatInputView: View {
     @ObservedObject var vm: ChatViewModel
+    var inputFocused: FocusState<Bool>.Binding
     @State private var showPhotoPicker = false
     
     var body: some View {
@@ -42,6 +43,7 @@ struct ChatInputView: View {
                 
                 TextField("Сообщение...", text: $vm.messageText, axis: .vertical)
                     .foregroundColor(Theme.textPrimary)
+                    .focused(inputFocused)
                     .lineLimit(1...5)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
@@ -49,6 +51,13 @@ struct ChatInputView: View {
                     .cornerRadius(20)
                     .onChange(of: vm.messageText) { _ in
                         vm.handleTyping()
+                    }
+                    .submitLabel(.send)
+                    .onSubmit {
+                        if !vm.messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                            vm.sendTextMessage()
+                        }
                     }
                 
                 if vm.messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
@@ -67,7 +76,10 @@ struct ChatInputView: View {
                             .foregroundColor(vm.isRecording ? Theme.danger : Theme.accent)
                     }
                 } else {
-                    Button { vm.sendTextMessage() } label: {
+                    Button {
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        vm.sendTextMessage()
+                    } label: {
                         Image(systemName: "arrow.up.circle.fill")
                             .font(.title2)
                             .foregroundColor(Theme.accent)

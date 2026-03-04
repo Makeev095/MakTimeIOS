@@ -16,16 +16,11 @@ struct MainTabView: View {
         ZStack {
             NavigationStack {
                 TabView(selection: $selectedTab) {
-                    ConversationListView(
-                        selectedConversation: $selectedConversation,
-                        onStartCall: { userId, name, convId in
-                            callTarget = CallTarget(userId: userId, name: name, conversationId: convId, isInitiator: true)
+                    chatsTab
+                        .tabItem {
+                            Label("Чаты", systemImage: "message.fill")
                         }
-                    )
-                    .tabItem {
-                        Label("Чаты", systemImage: "message.fill")
-                    }
-                    .tag(0)
+                        .tag(0)
                     
                     ContactsView { user in
                         Task {
@@ -63,7 +58,6 @@ struct MainTabView: View {
                 }
             }
             
-            // Incoming call overlay
             if let incoming = socketService.incomingCall, callTarget == nil {
                 IncomingCallOverlay(
                     call: incoming,
@@ -83,7 +77,6 @@ struct MainTabView: View {
                 )
             }
             
-            // Active call
             if let target = callTarget {
                 VideoCallView(
                     target: target,
@@ -95,6 +88,42 @@ struct MainTabView: View {
                     }
                 )
             }
+        }
+        .fullScreenCover(isPresented: $showStoryViewer) {
+            if let data = storyViewData {
+                StoryViewerView(
+                    storyUsers: data.users,
+                    startUserIdx: data.startIdx,
+                    onClose: { showStoryViewer = false }
+                )
+            }
+        }
+        .sheet(isPresented: $showStoryUpload) {
+            StoryUploadView(
+                onClose: { showStoryUpload = false },
+                onPublished: { showStoryUpload = false }
+            )
+        }
+    }
+    
+    private var chatsTab: some View {
+        VStack(spacing: 0) {
+            StoryBarView(
+                onViewStories: { users, idx in
+                    storyViewData = (users, idx)
+                    showStoryViewer = true
+                },
+                onAddStory: { showStoryUpload = true }
+            )
+            
+            Divider().background(Theme.border)
+            
+            ConversationListView(
+                selectedConversation: $selectedConversation,
+                onStartCall: { userId, name, convId in
+                    callTarget = CallTarget(userId: userId, name: name, conversationId: convId, isInitiator: true)
+                }
+            )
         }
     }
 }

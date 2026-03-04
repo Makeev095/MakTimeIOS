@@ -11,28 +11,71 @@ struct ConversationListView: View {
             SearchBarView(text: $vm.searchQuery)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
-                .onChange(of: vm.searchQuery) { _ in
-                    Task { await vm.searchUsers() }
-                }
             
             if !vm.searchResults.isEmpty && !vm.searchQuery.isEmpty {
                 searchResultsList
             }
             
-            ScrollView {
-                LazyVStack(spacing: 0) {
+            if vm.filteredConversations.isEmpty && !vm.isLoading {
+                emptyState
+            } else {
+                List {
                     ForEach(vm.filteredConversations) { conv in
                         conversationRow(conv)
+                            .listRowInsets(EdgeInsets())
+                            .listRowBackground(selectedConversation?.id == conv.id ? Theme.bgHover : Theme.bgPrimary)
+                            .listRowSeparator(.hidden)
+                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                Button(role: .destructive) {
+                                    withAnimation {
+                                        vm.conversations.removeAll { $0.id == conv.id }
+                                    }
+                                } label: {
+                                    Label("Удалить", systemImage: "trash")
+                                }
+                            }
+                            .swipeActions(edge: .leading) {
+                                Button {
+                                    // Mark as read
+                                    socketService.markRead(conversationId: conv.id)
+                                    if let idx = vm.conversations.firstIndex(where: { $0.id == conv.id }) {
+                                        vm.conversations[idx].unreadCount = 0
+                                    }
+                                } label: {
+                                    Label("Прочитано", systemImage: "envelope.open")
+                                }
+                                .tint(Theme.accent)
+                            }
                     }
                 }
+                .listStyle(.plain)
+                .scrollContentBackground(.hidden)
+                .scrollDismissesKeyboard(.interactively)
+                .refreshable { await vm.loadConversations() }
             }
-            .refreshable { await vm.loadConversations() }
         }
         .background(Theme.bgPrimary)
         .task {
             vm.setup(socketService: socketService)
             await vm.loadConversations()
         }
+    }
+    
+    private var emptyState: some View {
+        VStack(spacing: 16) {
+            Spacer()
+            Image(systemName: "bubble.left.and.bubble.right")
+                .font(.system(size: 56))
+                .foregroundColor(Theme.textMuted.opacity(0.5))
+            Text("Нет чатов")
+                .font(.headline)
+                .foregroundColor(Theme.textSecondary)
+            Text("Найдите пользователя через поиск")
+                .font(.subheadline)
+                .foregroundColor(Theme.textMuted)
+            Spacer()
+        }
+        .frame(maxWidth: .infinity)
     }
     
     private var searchResultsList: some View {
@@ -111,7 +154,6 @@ struct ConversationListView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
-            .background(selectedConversation?.id == conv.id ? Theme.bgHover : Color.clear)
         }
     }
 }

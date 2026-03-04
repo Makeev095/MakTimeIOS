@@ -51,14 +51,21 @@ struct MessageBubbleView: View {
                         .font(.system(size: 10))
                         .foregroundColor(isMine ? .white.opacity(0.6) : Theme.textMuted)
                     
-                    if isMine && message.read {
-                        Image(systemName: "checkmark.circle.fill")
+                    if isMine {
+                        Image(systemName: message.read ? "checkmark.circle.fill" : "checkmark.circle")
                             .font(.system(size: 10))
-                            .foregroundColor(.white.opacity(0.7))
+                            .foregroundColor(message.read ? Theme.success : .white.opacity(0.4))
                     }
                 }
             }
-            .onTapGesture { showActions = true }
+            .onTapGesture(count: 2) {
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                onReply()
+            }
+            .onLongPressGesture {
+                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                showActions = true
+            }
             .confirmationDialog("Действия", isPresented: $showActions) {
                 Button("Ответить") { onReply() }
                 if isMine {

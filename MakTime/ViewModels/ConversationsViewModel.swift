@@ -11,6 +11,7 @@ class ConversationsViewModel: ObservableObject {
     
     private var cancellables = Set<AnyCancellable>()
     private var socketService: SocketService?
+    private var searchDebounce: AnyCancellable?
     
     var filteredConversations: [Conversation] {
         if searchQuery.isEmpty { return conversations }
@@ -21,8 +22,19 @@ class ConversationsViewModel: ObservableObject {
         }
     }
     
+    var totalUnread: Int {
+        conversations.reduce(0) { $0 + $1.unreadCount }
+    }
+    
     func setup(socketService: SocketService) {
         self.socketService = socketService
+        
+        searchDebounce = $searchQuery
+            .debounce(for: .milliseconds(400), scheduler: DispatchQueue.main)
+            .removeDuplicates()
+            .sink { [weak self] query in
+                Task { await self?.performSearch(query) }
+            }
         
         socketService.messageReceived
             .receive(on: DispatchQueue.main)
@@ -76,11 +88,15 @@ class ConversationsViewModel: ObservableObject {
         isLoading = false
     }
     
-    func searchUsers() async {
-        guard searchQuery.count >= 2 else { searchResults = []; return }
+    private func performSearch(_ query: String) async {
+        guard query.count >= 2 else { searchResults = []; return }
         do {
-            searchResults = try await APIService.shared.searchUsers(query: searchQuery)
+            searchResults = try await APIService.shared.searchUsers(query: query)
         } catch { searchResults = [] }
+    }
+    
+    func searchUsers() async {
+        await performSearch(searchQuery)
     }
     
     func createConversation(with userId: String) async -> Conversation? {

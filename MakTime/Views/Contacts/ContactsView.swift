@@ -65,6 +65,7 @@ struct ContactsView: View {
                     }
                 }
             }
+            .scrollDismissesKeyboard(.interactively)
             .refreshable { await vm.loadContacts() }
         }
         .background(Theme.bgPrimary)

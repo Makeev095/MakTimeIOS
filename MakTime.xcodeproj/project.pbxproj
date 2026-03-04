@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 63;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -69,7 +69,7 @@
 		64A57D954D358C3FA9D7DE8A /* ChatViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewModel.swift; sourceTree = "<group>"; };
 		71B452ED609BFC12F426FE49 /* AvatarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarView.swift; sourceTree = "<group>"; };
 		74906BD696831E62C588D609 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		7C6765289B81975BE1C70FDC /* MakTime.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = MakTime.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7C6765289B81975BE1C70FDC /* MakTime.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MakTime.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7CE3A8969595FF645894EE8F /* WebRTCService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebRTCService.swift; sourceTree = "<group>"; };
 		7D7B214E8FE914DA4758AAA4 /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		8320DB45EEF02D36AEC12D29 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -311,11 +311,6 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1500;
-				TargetAttributes = {
-					ED777E73F84CDF485267FBFD = {
-						DevelopmentTeam = "";
-					};
-				};
 			};
 			buildConfigurationList = C6F9D3966668A298E02DA8D6 /* Build configuration list for PBXProject "MakTime" */;
 			compatibilityVersion = "Xcode 14.0";
@@ -329,10 +324,9 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				5238C2BF1CCA8688F97831C6 /* XCRemoteSwiftPackageReference "KeychainAccess" */,
-				683A8D5574B1DB3C34554060 /* XCRemoteSwiftPackageReference "socket.io-client-swift" */,
+				683A8D5574B1DB3C34554060 /* XCRemoteSwiftPackageReference "socket" */,
 				09D3011744D975904BF1DEBC /* XCRemoteSwiftPackageReference "WebRTC" */,
 			);
-			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -405,7 +399,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = S35L7N92X8;
 				INFOPLIST_FILE = MakTime/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -414,6 +408,10 @@
 				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.maktime.app;
 				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -482,7 +480,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = S35L7N92X8;
 				INFOPLIST_FILE = MakTime/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -491,6 +489,10 @@
 				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.maktime.app;
 				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -600,7 +602,7 @@
 				minimumVersion = 4.2.2;
 			};
 		};
-		683A8D5574B1DB3C34554060 /* XCRemoteSwiftPackageReference "socket.io-client-swift" */ = {
+		683A8D5574B1DB3C34554060 /* XCRemoteSwiftPackageReference "socket" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/socketio/socket.io-client-swift";
 			requirement = {
@@ -613,7 +615,7 @@
 /* Begin XCSwiftPackageProductDependency section */
 		1B1F4F4573265C3D4CF9BE71 /* SocketIO */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 683A8D5574B1DB3C34554060 /* XCRemoteSwiftPackageReference "socket.io-client-swift" */;
+			package = 683A8D5574B1DB3C34554060 /* XCRemoteSwiftPackageReference "socket" */;
 			productName = SocketIO;
 		};
 		A299F162096E4D31AAFC8AB7 /* WebRTC */ = {

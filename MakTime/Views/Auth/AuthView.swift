@@ -80,6 +80,10 @@ struct AuthView: View {
                 }
                 .padding(.horizontal, 24)
             }
+            .scrollDismissesKeyboard(.interactively)
+        }
+        .onTapGesture {
+            UIApplication.shared.dismissKeyboard()
         }
     }
     

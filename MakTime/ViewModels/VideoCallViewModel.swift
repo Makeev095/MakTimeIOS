@@ -1,6 +1,8 @@
 import Foundation
 import Combine
 import WebRTC
+import AVFoundation
+import AudioToolbox
 
 @MainActor
 class VideoCallViewModel: ObservableObject {
@@ -19,6 +21,8 @@ class VideoCallViewModel: ObservableObject {
     private var callTimeout: Timer?
     private var iceRestartCount = 0
     private var ended = false
+    private var ringPlayer: AVAudioPlayer?
+    private var ringTimer: Timer?
     
     enum CallStatus: String {
         case calling = "Вызов..."
@@ -53,6 +57,7 @@ class VideoCallViewModel: ObservableObject {
             .sink { [weak self] from in
                 guard let self = self, from == self.target.userId else { return }
                 self.callTimeout?.invalidate()
+                self.stopRingtone()
                 self.status = .connecting
                 Task { await self.createAndSendOffer() }
             }
@@ -62,6 +67,7 @@ class VideoCallViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] in
                 self?.callTimeout?.invalidate()
+                self?.stopRingtone()
                 self?.status = .rejected
                 DispatchQueue.main.asyncAfter(deadline: .now() + 2) { self?.endCallRemote() }
             }
@@ -69,13 +75,17 @@ class VideoCallViewModel: ObservableObject {
         
         socketService.callEnded
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] in self?.endCallRemote() }
+            .sink { [weak self] in
+                self?.stopRingtone()
+                self?.endCallRemote()
+            }
             .store(in: &cancellables)
         
         socketService.callUnavailable
             .receive(on: DispatchQueue.main)
             .sink { [weak self] in
                 self?.callTimeout?.invalidate()
+                self?.stopRingtone()
                 self?.status = .unavailable
                 DispatchQueue.main.asyncAfter(deadline: .now() + 2) { self?.endCallRemote() }
             }
@@ -107,6 +117,7 @@ class VideoCallViewModel: ObservableObject {
         
         if target.isInitiator {
             socketService.initiateCall(to: target.userId, conversationId: target.conversationId, callerName: callerName)
+            startRingtone()
             callTimeout = Timer.scheduledTimer(withTimeInterval: 30, repeats: false) { [weak self] _ in
                 Task { @MainActor in
                     self?.status = .unavailable
@@ -116,6 +127,32 @@ class VideoCallViewModel: ObservableObject {
         } else {
             socketService.acceptCall(to: target.userId)
         }
+    }
+    
+    private func startRingtone() {
+        guard target.isInitiator else { return }
+        let ctx = AVAudioSession.sharedInstance()
+        try? ctx.setCategory(.playAndRecord, mode: .voiceChat, options: [.defaultToSpeaker, .allowBluetooth])
+        try? ctx.setActive(true)
+        
+        ringTimer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) { [weak self] _ in
+            Task { @MainActor in
+                self?.playBeep()
+            }
+        }
+        playBeep()
+    }
+    
+    private func playBeep() {
+        guard status == .calling else { stopRingtone(); return }
+        let oscillator = AVAudioSession.sharedInstance()
+        try? oscillator.setActive(true)
+        AudioServicesPlaySystemSound(1151)
+    }
+    
+    private func stopRingtone() {
+        ringTimer?.invalidate()
+        ringTimer = nil
     }
     
     private func createAndSendOffer() async {
@@ -166,6 +203,7 @@ class VideoCallViewModel: ObservableObject {
     }
     
     private func cleanup() {
+        stopRingtone()
         callTimeout?.invalidate()
         durationTimer?.invalidate()
         cancellables.removeAll()
