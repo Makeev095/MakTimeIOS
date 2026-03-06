@@ -1,6 +1,7 @@
 import Foundation
 import WebRTC
 import Combine
+import AVFoundation
 
 protocol WebRTCServiceDelegate: AnyObject {
     func webRTCService(_ service: WebRTCService, didReceiveRemoteVideoTrack track: RTCVideoTrack)
@@ -31,6 +32,7 @@ class WebRTCService: NSObject {
     // MARK: - Setup
     
     func setup() {
+        configureAudioSession()
         let config = RTCConfiguration()
         config.iceServers = [
             RTCIceServer(urlStrings: AppConfig.stunServers),
@@ -58,6 +60,14 @@ class WebRTCService: NSObject {
         setupLocalMedia()
     }
     
+    private func configureAudioSession() {
+        let session = AVAudioSession.sharedInstance()
+        do {
+            try session.setCategory(.playAndRecord, mode: .voiceChat, options: [.defaultToSpeaker, .allowBluetooth, .mixWithOthers])
+            try session.setActive(true, options: .notifyOthersOnDeactivation)
+        } catch {}
+    }
+
     private func setupLocalMedia() {
         // Audio
         let audioConstraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: nil)
@@ -211,6 +221,7 @@ class WebRTCService: NSObject {
         localAudioTrack = nil
         videoCapturer = nil
         localVideoSource = nil
+        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
     }
     
     // MARK: - Helpers

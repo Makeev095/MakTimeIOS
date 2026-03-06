@@ -22,6 +22,12 @@ struct MainTabView: View {
                         }
                         .tag(0)
                     
+                    FeedView()
+                        .tabItem {
+                            Label("Лента", systemImage: "square.grid.2x2")
+                        }
+                        .tag(3)
+
                     ContactsView { user in
                         Task {
                             let conv = try? await APIService.shared.createConversation(participantId: user.id)

@@ -15,16 +15,29 @@ struct VideoCallView: View {
     @State private var pulse2 = false
     @State private var pulse3 = false
 
-    // Draggable local video position
-    @State private var localVideoPosition: CGPoint = .zero
-    @State private var localVideoInitialized = false
+    // Draggable local video
+    @State private var localVideoCorner: Corner = .topTrailing
+    @State private var localVideoDragOffset: CGSize = .zero
 
-    // Draggable PiP position
+    // Draggable PiP
     @State private var pipPosition: CGPoint = .zero
     @State private var pipInitialized = false
 
     private let localVideoSize = CGSize(width: 110, height: 150)
     private let pipSize = CGSize(width: 150, height: 200)
+
+    enum Corner {
+        case topLeading, topTrailing, bottomLeading, bottomTrailing
+
+        var alignment: Alignment {
+            switch self {
+            case .topLeading: return .topLeading
+            case .topTrailing: return .topTrailing
+            case .bottomLeading: return .bottomLeading
+            case .bottomTrailing: return .bottomTrailing
+            }
+        }
+    }
 
     init(target: CallTarget, minimized: Bool, onToggleMinimize: @escaping () -> Void, onEnd: @escaping () -> Void) {
         self.target = target
@@ -52,157 +65,167 @@ struct VideoCallView: View {
         vm.status == .calling || vm.status == .connecting
     }
 
+    // MARK: - Fullscreen View (no GeometryReader wrapping everything)
+
     private var fullscreenView: some View {
-        GeometryReader { geo in
-            ZStack {
-                // Background
-                if vm.status == .connected, vm.remoteVideoTrack != nil {
-                    Color.black.ignoresSafeArea()
-                } else {
-                    callingBackground
-                }
+        ZStack {
+            // Background
+            if vm.status == .connected, vm.remoteVideoTrack != nil {
+                Color.black.ignoresSafeArea()
+            } else {
+                callingBackground
+            }
 
-                // Remote video (only when connected)
-                if let remoteTrack = vm.remoteVideoTrack, vm.status == .connected {
-                    WebRTCVideoView(track: remoteTrack)
-                        .ignoresSafeArea()
-                        .transition(.opacity)
-                }
+            // Remote video (only when connected)
+            if let remoteTrack = vm.remoteVideoTrack, vm.status == .connected {
+                WebRTCVideoView(track: remoteTrack)
+                    .ignoresSafeArea()
+                    .transition(.opacity)
+            }
 
-                // Calling/connecting state - avatar + name
-                if isWaiting || vm.remoteVideoTrack == nil {
-                    waitingOverlay
-                }
+            // Calling/connecting state - avatar + name
+            if isWaiting || vm.remoteVideoTrack == nil {
+                waitingOverlay
+            }
 
-                // Local video (draggable)
-                if vm.status == .connected {
-                    if let localTrack = vm.webRTCService.localStream {
-                        WebRTCVideoView(track: localTrack, mirror: true)
-                            .frame(width: localVideoSize.width, height: localVideoSize.height)
-                            .cornerRadius(14)
-                            .shadow(color: .black.opacity(0.4), radius: 8)
-                            .position(localVideoInitialized ? localVideoPosition : defaultLocalVideoPosition(in: geo))
-                            .gesture(
-                                DragGesture()
-                                    .onChanged { value in
-                                        localVideoPosition = value.location
-                                    }
-                                    .onEnded { value in
-                                        withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
-                                            localVideoPosition = snapToCorner(
-                                                point: value.location,
-                                                in: geo.size,
-                                                itemSize: localVideoSize,
-                                                padding: 16,
-                                                topInset: 70
-                                            )
-                                        }
-                                    }
-                            )
-                            .onAppear {
-                                if !localVideoInitialized {
-                                    localVideoPosition = defaultLocalVideoPosition(in: geo)
-                                    localVideoInitialized = true
-                                }
-                            }
-                    }
-                }
-
-                // Top bar (when connected)
-                if vm.status == .connected {
-                    VStack {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(target.name)
-                                    .font(.headline)
-                                    .foregroundColor(.white)
-                                Text(vm.statusText)
-                                    .font(.subheadline)
-                                    .foregroundColor(.white.opacity(0.7))
-                            }
-                            Spacer()
-                            Button(action: onToggleMinimize) {
-                                Image(systemName: "arrow.down.right.and.arrow.up.left")
-                                    .font(.title3)
-                                    .foregroundColor(.white)
-                                    .padding(8)
-                                    .background(.ultraThinMaterial)
-                                    .clipShape(Circle())
-                            }
-                        }
-                        .padding(.horizontal, 20)
-                        .padding(.top, 60)
-                        Spacer()
-                    }
-                }
-
-                // Controls
-                VStack {
-                    Spacer()
-
-                    if vm.status == .rejected || vm.status == .unavailable || vm.status == .error {
-                        Text(vm.statusText)
-                            .font(.headline)
-                            .foregroundColor(.white.opacity(0.8))
-                            .padding(.bottom, 20)
-                    }
-
-                    HStack(spacing: 24) {
-                        if vm.status == .connected {
-                            callButton(icon: vm.isMuted ? "mic.slash.fill" : "mic.fill",
-                                      isActive: vm.isMuted) { vm.toggleMute() }
-                            callButton(icon: vm.isVideoOff ? "video.slash.fill" : "video.fill",
-                                      isActive: vm.isVideoOff) { vm.toggleVideo() }
-                            callButton(icon: "arrow.triangle.2.circlepath.camera", isActive: false) { vm.switchCamera() }
-
-                            Button(action: onToggleMinimize) {
-                                Image(systemName: "arrow.down.right.and.arrow.up.left")
-                                    .font(.title3)
-                                    .foregroundColor(.white)
-                                    .frame(width: 50, height: 50)
-                                    .background(.white.opacity(0.2))
-                                    .clipShape(Circle())
-                            }
-                        }
-
-                        Button(action: { vm.endCall() }) {
-                            Image(systemName: "phone.down.fill")
-                                .font(.title2)
-                                .foregroundColor(.white)
-                                .frame(width: 64, height: 64)
-                                .background(Theme.danger)
-                                .clipShape(Circle())
-                                .shadow(color: Theme.danger.opacity(0.4), radius: 8)
-                        }
-                    }
-                    .padding(.bottom, 50)
+            // Local video (draggable, snaps to corners)
+            if vm.status == .connected {
+                if let localTrack = vm.webRTCService.localStream {
+                    localVideoView(track: localTrack)
                 }
             }
-            .animation(.easeInOut(duration: 0.5), value: vm.status == .connected)
+
+            // Top bar (when connected)
+            if vm.status == .connected {
+                VStack {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(target.name)
+                                .font(.headline)
+                                .foregroundColor(.white)
+                            Text(vm.statusText)
+                                .font(.subheadline)
+                                .foregroundColor(.white.opacity(0.7))
+                        }
+                        Spacer()
+                        Button(action: onToggleMinimize) {
+                            Image(systemName: "arrow.down.right.and.arrow.up.left")
+                                .font(.title3)
+                                .foregroundColor(.white)
+                                .padding(8)
+                                .background(.ultraThinMaterial)
+                                .clipShape(Circle())
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 60)
+                    Spacer()
+                }
+            }
+
+            // Controls
+            VStack {
+                Spacer()
+
+                if vm.status == .rejected || vm.status == .unavailable || vm.status == .error {
+                    Text(vm.statusText)
+                        .font(.headline)
+                        .foregroundColor(.white.opacity(0.8))
+                        .padding(.bottom, 20)
+                }
+
+                HStack(spacing: 24) {
+                    if vm.status == .connected {
+                        callButton(icon: vm.isMuted ? "mic.slash.fill" : "mic.fill",
+                                  isActive: vm.isMuted) { vm.toggleMute() }
+                        callButton(icon: vm.isVideoOff ? "video.slash.fill" : "video.fill",
+                                  isActive: vm.isVideoOff) { vm.toggleVideo() }
+                        callButton(icon: "arrow.triangle.2.circlepath.camera", isActive: false) { vm.switchCamera() }
+
+                        Button(action: onToggleMinimize) {
+                            Image(systemName: "arrow.down.right.and.arrow.up.left")
+                                .font(.title3)
+                                .foregroundColor(.white)
+                                .frame(width: 50, height: 50)
+                                .background(.white.opacity(0.2))
+                                .clipShape(Circle())
+                        }
+                    }
+
+                    Button(action: { vm.endCall() }) {
+                        Image(systemName: "phone.down.fill")
+                            .font(.title2)
+                            .foregroundColor(.white)
+                            .frame(width: 64, height: 64)
+                            .background(Theme.danger)
+                            .clipShape(Circle())
+                            .shadow(color: Theme.danger.opacity(0.4), radius: 8)
+                    }
+                }
+                .padding(.bottom, 50)
+            }
+        }
+        .animation(.easeInOut(duration: 0.5), value: vm.status == .connected)
+    }
+
+    // MARK: - Local Video (draggable with corner snap)
+
+    private func localVideoView(track: RTCVideoTrack) -> some View {
+        GeometryReader { geo in
+            WebRTCVideoView(track: track, mirror: true)
+                .frame(width: localVideoSize.width, height: localVideoSize.height)
+                .cornerRadius(14)
+                .shadow(color: .black.opacity(0.4), radius: 8)
+                .position(positionForCorner(localVideoCorner, in: geo.size))
+                .offset(localVideoDragOffset)
+                .gesture(
+                    DragGesture()
+                        .onChanged { value in
+                            localVideoDragOffset = value.translation
+                        }
+                        .onEnded { value in
+                            let currentPos = positionForCorner(localVideoCorner, in: geo.size)
+                            let finalPoint = CGPoint(
+                                x: currentPos.x + value.translation.width,
+                                y: currentPos.y + value.translation.height
+                            )
+                            let newCorner = closestCorner(to: finalPoint, in: geo.size)
+                            withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
+                                localVideoCorner = newCorner
+                                localVideoDragOffset = .zero
+                            }
+                        }
+                )
         }
     }
 
-    // MARK: - Snap to Corner
+    private func positionForCorner(_ corner: Corner, in size: CGSize) -> CGPoint {
+        let halfW = localVideoSize.width / 2
+        let halfH = localVideoSize.height / 2
+        let padX: CGFloat = 16
+        let topY: CGFloat = 70
 
-    private func defaultLocalVideoPosition(in geo: GeometryProxy) -> CGPoint {
-        CGPoint(
-            x: geo.size.width - localVideoSize.width / 2 - 16,
-            y: localVideoSize.height / 2 + 70
-        )
+        switch corner {
+        case .topLeading:
+            return CGPoint(x: halfW + padX, y: halfH + topY)
+        case .topTrailing:
+            return CGPoint(x: size.width - halfW - padX, y: halfH + topY)
+        case .bottomLeading:
+            return CGPoint(x: halfW + padX, y: size.height - halfH - 70)
+        case .bottomTrailing:
+            return CGPoint(x: size.width - halfW - padX, y: size.height - halfH - 70)
+        }
     }
 
-    private func snapToCorner(point: CGPoint, in size: CGSize, itemSize: CGSize, padding: CGFloat, topInset: CGFloat) -> CGPoint {
-        let halfW = itemSize.width / 2
-        let halfH = itemSize.height / 2
-        let left = halfW + padding
-        let right = size.width - halfW - padding
-        let top = halfH + topInset
-        let bottom = size.height - halfH - padding - 60
-
-        let x = point.x < size.width / 2 ? left : right
-        let y = point.y < size.height / 2 ? top : bottom
-
-        return CGPoint(x: x, y: y)
+    private func closestCorner(to point: CGPoint, in size: CGSize) -> Corner {
+        let corners: [Corner] = [.topLeading, .topTrailing, .bottomLeading, .bottomTrailing]
+        return corners.min(by: { a, b in
+            let posA = positionForCorner(a, in: size)
+            let posB = positionForCorner(b, in: size)
+            let distA = hypot(point.x - posA.x, point.y - posA.y)
+            let distB = hypot(point.x - posB.x, point.y - posB.y)
+            return distA < distB
+        }) ?? .topTrailing
     }
 
     // MARK: - Calling Background with Animations
@@ -242,7 +265,7 @@ struct VideoCallView: View {
         }
     }
 
-    // MARK: - Waiting Overlay (calling/connecting state)
+    // MARK: - Waiting Overlay
 
     private var waitingOverlay: some View {
         VStack(spacing: 20) {
@@ -313,9 +336,9 @@ struct VideoCallView: View {
                             vm.endCall()
                         } label: {
                             Image(systemName: "phone.down.fill")
-                                .font(.system(size: 10))
+                                .font(.system(size: 14))
                                 .foregroundColor(.white)
-                                .padding(6)
+                                .padding(10)
                                 .background(Theme.danger)
                                 .clipShape(Circle())
                         }

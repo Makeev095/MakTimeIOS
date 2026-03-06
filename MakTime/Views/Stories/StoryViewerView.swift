@@ -5,7 +5,7 @@ struct StoryViewerView: View {
     let storyUsers: [StoryUser]
     let startUserIdx: Int
     let onClose: () -> Void
-    
+
     @State private var currentUserIdx: Int
     @State private var currentStoryIdx = 0
     @State private var progress: CGFloat = 0
@@ -14,34 +14,37 @@ struct StoryViewerView: View {
     @State private var replyText = ""
     @State private var viewers: [StoryViewer] = []
     @State private var showViewers = false
+    @State private var storyImage: UIImage?
+    @State private var imageLoading = false
+    @State private var imageError = false
     @EnvironmentObject var authService: AuthService
     @EnvironmentObject var socketService: SocketService
-    
+
     init(storyUsers: [StoryUser], startUserIdx: Int, onClose: @escaping () -> Void) {
         self.storyUsers = storyUsers
         self.startUserIdx = startUserIdx
         self.onClose = onClose
         _currentUserIdx = State(initialValue: startUserIdx)
     }
-    
+
     private var currentUser: StoryUser? {
         guard currentUserIdx < storyUsers.count else { return nil }
         return storyUsers[currentUserIdx]
     }
-    
+
     private var currentStory: Story? {
         guard let user = currentUser, currentStoryIdx < user.stories.count else { return nil }
         return user.stories[currentStoryIdx]
     }
-    
+
     var body: some View {
         ZStack {
             Color.black.ignoresSafeArea()
-            
+
             if let story = currentStory {
                 storyContent(story)
             }
-            
+
             // Progress bars
             VStack {
                 if let user = currentUser {
@@ -61,7 +64,7 @@ struct StoryViewerView: View {
                     }
                     .padding(.horizontal, 12)
                     .padding(.top, 50)
-                    
+
                     // User info
                     HStack(spacing: 10) {
                         AvatarView(name: user.displayName, color: user.avatarColor, size: 36)
@@ -74,7 +77,7 @@ struct StoryViewerView: View {
                                 .foregroundColor(.white.opacity(0.6))
                         }
                         Spacer()
-                        
+
                         if user.isOwn {
                             Button {
                                 Task { await deleteCurrentStory() }
@@ -82,7 +85,7 @@ struct StoryViewerView: View {
                                 Image(systemName: "trash")
                                     .foregroundColor(.white)
                             }
-                            
+
                             Button { showViewers = true } label: {
                                 HStack(spacing: 3) {
                                     Image(systemName: "eye")
@@ -94,7 +97,7 @@ struct StoryViewerView: View {
                                 .foregroundColor(.white.opacity(0.8))
                             }
                         }
-                        
+
                         Button(action: onClose) {
                             Image(systemName: "xmark")
                                 .font(.title3)
@@ -104,9 +107,9 @@ struct StoryViewerView: View {
                     .padding(.horizontal, 16)
                     .padding(.top, 8)
                 }
-                
+
                 Spacer()
-                
+
                 // Reactions + reply
                 if !(currentUser?.isOwn ?? true) {
                     HStack(spacing: 8) {
@@ -117,7 +120,7 @@ struct StoryViewerView: View {
                             .background(.ultraThinMaterial)
                             .cornerRadius(20)
                             .onSubmit { sendReply() }
-                        
+
                         ForEach(["❤️", "🔥", "😂", "😮", "👏"], id: \.self) { emoji in
                             Button {
                                 Task {
@@ -134,7 +137,7 @@ struct StoryViewerView: View {
                     .padding(.bottom, 30)
                 }
             }
-            
+
             // Tap zones
             HStack(spacing: 0) {
                 Color.clear
@@ -145,46 +148,41 @@ struct StoryViewerView: View {
                     .onTapGesture { nextStory() }
             }
         }
-        .onAppear { startTimer() }
+        .onAppear { loadCurrentStoryImage(); startTimer() }
         .onDisappear { timer?.invalidate() }
         .sheet(isPresented: $showViewers) {
             viewersList
         }
     }
-    
+
+    @ViewBuilder
     private func storyContent(_ story: Story) -> some View {
         ZStack {
             if story.type == .video, let url = URL(string: story.fullFileUrl) {
                 VideoPlayer(player: AVPlayer(url: url))
                     .ignoresSafeArea()
-            } else if let url = URL(string: story.fullFileUrl) {
-                AsyncImage(url: url) { phase in
-                    switch phase {
-                    case .success(let img):
-                        img.resizable().scaledToFill().ignoresSafeArea()
-                    case .failure:
-                        VStack(spacing: 16) {
-                            Image(systemName: "photo.badge.exclamationmark")
-                                .font(.system(size: 48))
-                                .foregroundColor(.white.opacity(0.5))
-                            Text("Не удалось загрузить")
-                                .font(.subheadline)
-                                .foregroundColor(.white.opacity(0.6))
-                        }
-                    default:
-                        ProgressView()
-                            .tint(.white)
-                            .scaleEffect(1.5)
-                    }
-                }
-            } else {
+            } else if let image = storyImage {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+                    .ignoresSafeArea()
+            } else if imageLoading {
+                ProgressView()
+                    .tint(.white)
+                    .scaleEffect(1.5)
+            } else if imageError {
                 VStack(spacing: 16) {
                     Image(systemName: "photo.badge.exclamationmark")
                         .font(.system(size: 48))
                         .foregroundColor(.white.opacity(0.5))
-                    Text("Недоступно")
+                    Text("Не удалось загрузить")
                         .font(.subheadline)
                         .foregroundColor(.white.opacity(0.6))
+                    Button("Повторить") {
+                        loadCurrentStoryImage()
+                    }
+                    .foregroundColor(Theme.accent)
+                    .padding(.top, 4)
                 }
             }
 
@@ -197,7 +195,44 @@ struct StoryViewerView: View {
             }
         }
     }
-    
+
+    private func loadCurrentStoryImage() {
+        guard let story = currentStory, story.type == .image else { return }
+        let urlString = story.fullFileUrl
+        guard let url = URL(string: urlString) else {
+            imageError = true
+            return
+        }
+
+        storyImage = nil
+        imageLoading = true
+        imageError = false
+
+        Task {
+            do {
+                let (data, response) = try await URLSession.shared.data(from: url)
+                if let httpResponse = response as? HTTPURLResponse,
+                   (200...299).contains(httpResponse.statusCode),
+                   let image = UIImage(data: data) {
+                    await MainActor.run {
+                        self.storyImage = image
+                        self.imageLoading = false
+                    }
+                } else {
+                    await MainActor.run {
+                        self.imageLoading = false
+                        self.imageError = true
+                    }
+                }
+            } catch {
+                await MainActor.run {
+                    self.imageLoading = false
+                    self.imageError = true
+                }
+            }
+        }
+    }
+
     private var viewersList: some View {
         NavigationStack {
             List(viewers) { viewer in
@@ -222,7 +257,7 @@ struct StoryViewerView: View {
             }
         }
     }
-    
+
     private func startTimer() {
         markViewed()
         timer?.invalidate()
@@ -234,38 +269,42 @@ struct StoryViewerView: View {
             }
         }
     }
-    
+
     private func nextStory() {
         guard let user = currentUser else { onClose(); return }
         if currentStoryIdx < user.stories.count - 1 {
             currentStoryIdx += 1
+            loadCurrentStoryImage()
             startTimer()
         } else if currentUserIdx < storyUsers.count - 1 {
             currentUserIdx += 1
             currentStoryIdx = 0
+            loadCurrentStoryImage()
             startTimer()
         } else {
             onClose()
         }
     }
-    
+
     private func previousStory() {
         if currentStoryIdx > 0 {
             currentStoryIdx -= 1
+            loadCurrentStoryImage()
             startTimer()
         } else if currentUserIdx > 0 {
             currentUserIdx -= 1
             currentStoryIdx = max(0, (storyUsers[currentUserIdx].stories.count) - 1)
+            loadCurrentStoryImage()
             startTimer()
         }
     }
-    
+
     private func markViewed() {
         if let s = currentStory, !(currentUser?.isOwn ?? true) {
             Task { try? await APIService.shared.viewStory(storyId: s.id) }
         }
     }
-    
+
     private func sendReply() {
         guard !replyText.isEmpty else { return }
         if let user = currentUser {
@@ -277,7 +316,7 @@ struct StoryViewerView: View {
         }
         replyText = ""
     }
-    
+
     private func deleteCurrentStory() async {
         guard let s = currentStory else { return }
         try? await APIService.shared.deleteStory(storyId: s.id)

@@ -1,0 +1,101 @@
+import Foundation
+import SwiftUI
+import PhotosUI
+
+@MainActor
+class FeedViewModel: ObservableObject {
+    @Published var posts: [Post] = []
+    @Published var isLoading = false
+    @Published var isRefreshing = false
+
+    func loadPosts() async {
+        isLoading = true
+        do {
+            posts = try await APIService.shared.getPosts()
+        } catch {}
+        isLoading = false
+    }
+
+    func refreshPosts() async {
+        isRefreshing = true
+        do {
+            posts = try await APIService.shared.getPosts()
+        } catch {}
+        isRefreshing = false
+    }
+
+    func toggleLike(post: Post) {
+        guard let idx = posts.firstIndex(where: { $0.id == post.id }) else { return }
+        let wasLiked = posts[idx].isLiked
+        posts[idx].isLiked.toggle()
+        posts[idx].likesCount += wasLiked ? -1 : 1
+        Task {
+            do {
+                if wasLiked {
+                    try await APIService.shared.unlikePost(postId: post.id)
+                } else {
+                    try await APIService.shared.likePost(postId: post.id)
+                }
+            } catch {
+                // Revert on error
+                if let idx = posts.firstIndex(where: { $0.id == post.id }) {
+                    posts[idx].isLiked = wasLiked
+                    posts[idx].likesCount += wasLiked ? 1 : -1
+                }
+            }
+        }
+    }
+
+    func repost(post: Post) {
+        guard let idx = posts.firstIndex(where: { $0.id == post.id }) else { return }
+        posts[idx].repostsCount += 1
+        Task {
+            try? await APIService.shared.repostPost(postId: post.id)
+        }
+    }
+
+    func deletePost(_ post: Post) {
+        posts.removeAll { $0.id == post.id }
+        Task {
+            try? await APIService.shared.deletePost(postId: post.id)
+        }
+    }
+
+    func publishPost(photoData: Data, caption: String) async -> Bool {
+        do {
+            let fileUrl = try await MediaService.uploadData(
+                photoData,
+                filename: "post_\(UUID().uuidString).jpg",
+                mimeType: "image/jpeg"
+            )
+            let newPost = try await APIService.shared.createPost(
+                type: "image",
+                fileUrl: fileUrl,
+                caption: caption
+            )
+            posts.insert(newPost, at: 0)
+            return true
+        } catch {
+            return false
+        }
+    }
+
+    func publishVideoPost(videoData: Data, caption: String) async -> Bool {
+        do {
+            let fileUrl = try await MediaService.uploadData(
+                videoData,
+                filename: "post_\(UUID().uuidString).mp4",
+                mimeType: "video/mp4"
+            )
+            let newPost = try await APIService.shared.createPost(
+                type: "video",
+                fileUrl: fileUrl,
+                caption: caption
+            )
+            posts.insert(newPost, at: 0)
+            return true
+        } catch {
+            return false
+        }
+    }
+}

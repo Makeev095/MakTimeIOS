@@ -47,6 +47,12 @@
 		F94E91C4CBFAC80075C3D239 /* WebRTCService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CE3A8969595FF645894EE8F /* WebRTCService.swift */; };
 		FD3BD33051DB493BABF4D584 /* ContactsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0550E8C7509340E70D9F4DD9 /* ContactsView.swift */; };
 		FEB3095F8E9B7E9C166D5D72 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6BD307756007E605934AB4D /* SettingsView.swift */; };
+		078024204263149949357222 /* Post.swift in Sources */ = {isa = PBXBuildFile; fileRef = 895129451551370572020540 /* Post.swift */; };
+		272150153185544583402808 /* FeedViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 859631383167352329456020 /* FeedViewModel.swift */; };
+		001303323444371096905935 /* FeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 960738404042650778104325 /* FeedView.swift */; };
+		751107501420381301350456 /* PostCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 945122127472053240137544 /* PostCardView.swift */; };
+		047024351222419233124642 /* CreatePostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 967894542951312202421185 /* CreatePostView.swift */; };
+		562324924211245477631693 /* CommentsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 425318356321084943614204 /* CommentsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -89,6 +95,12 @@
 		E6BD307756007E605934AB4D /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		F1A89FC01C9C62C84EA4D64D /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		F3DC1183135D3F49DDA38807 /* SearchBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchBarView.swift; sourceTree = "<group>"; };
+		895129451551370572020540 /* Post.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Post.swift; sourceTree = "<group>"; };
+		859631383167352329456020 /* FeedViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedViewModel.swift; sourceTree = "<group>"; };
+		960738404042650778104325 /* FeedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedView.swift; sourceTree = "<group>"; };
+		945122127472053240137544 /* PostCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostCardView.swift; sourceTree = "<group>"; };
+		967894542951312202421185 /* CreatePostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreatePostView.swift; sourceTree = "<group>"; };
+		425318356321084943614204 /* CommentsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -177,6 +189,7 @@
 				468F498D179BA4CD5E4AE88D /* Settings */,
 				331CC37D2172051062D328F4 /* Stories */,
 				A098C2353A038991B38871AE /* VideoCall */,
+				812401224020835895369539 /* Feed */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -198,6 +211,7 @@
 				DE52531C2C14A5D1171A9D4D /* ConversationsViewModel.swift */,
 				3CAC9EE7F7A348C7A89463A9 /* SettingsViewModel.swift */,
 				5C907CB5690416B2D7FDF8EC /* StoriesViewModel.swift */,
+				859631383167352329456020 /* FeedViewModel.swift */,
 				AFABD1E8A11EBFA21C652407 /* VideoCallViewModel.swift */,
 			);
 			path = ViewModels;
@@ -273,9 +287,21 @@
 				63152E21739DC55AB47263F5 /* IncomingCall.swift */,
 				32C7F2729D40E1E17CD30368 /* Message.swift */,
 				4791397EBFECEC2BC9C3E021 /* Story.swift */,
+				895129451551370572020540 /* Post.swift */,
 				4BD3371D6D6497637C6958A9 /* User.swift */,
 			);
 			path = Models;
+			sourceTree = "<group>";
+		};
+		812401224020835895369539 /* Feed */ = {
+			isa = PBXGroup;
+			children = (
+				960738404042650778104325 /* FeedView.swift */,
+				945122127472053240137544 /* PostCardView.swift */,
+				967894542951312202421185 /* CreatePostView.swift */,
+				425318356321084943614204 /* CommentsView.swift */,
+			);
+			path = Feed;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -375,6 +401,12 @@
 				8C63A5425E8F802B8240CF44 /* MessageBubbleView.swift in Sources */,
 				7CBAF7890B022E0B5E594310 /* SearchBarView.swift in Sources */,
 				FEB3095F8E9B7E9C166D5D72 /* SettingsView.swift in Sources */,
+				562324924211245477631693 /* CommentsView.swift in Sources */,
+				047024351222419233124642 /* CreatePostView.swift in Sources */,
+				751107501420381301350456 /* PostCardView.swift in Sources */,
+				001303323444371096905935 /* FeedView.swift in Sources */,
+				272150153185544583402808 /* FeedViewModel.swift in Sources */,
+				078024204263149949357222 /* Post.swift in Sources */,
 				663B20C5A6B9BF8EDD219E91 /* SettingsViewModel.swift in Sources */,
 				405B890B6B6701AF5B90B42E /* SocketService.swift in Sources */,
 				6F62A8BC62273BC3F488F51E /* StoriesViewModel.swift in Sources */,
