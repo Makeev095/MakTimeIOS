@@ -157,17 +157,37 @@ struct StoryViewerView: View {
             if story.type == .video, let url = URL(string: story.fullFileUrl) {
                 VideoPlayer(player: AVPlayer(url: url))
                     .ignoresSafeArea()
-            } else {
-                AsyncImage(url: URL(string: story.fullFileUrl)) { phase in
+            } else if let url = URL(string: story.fullFileUrl) {
+                AsyncImage(url: url) { phase in
                     switch phase {
                     case .success(let img):
                         img.resizable().scaledToFill().ignoresSafeArea()
+                    case .failure:
+                        VStack(spacing: 16) {
+                            Image(systemName: "photo.badge.exclamationmark")
+                                .font(.system(size: 48))
+                                .foregroundColor(.white.opacity(0.5))
+                            Text("Не удалось загрузить")
+                                .font(.subheadline)
+                                .foregroundColor(.white.opacity(0.6))
+                        }
                     default:
-                        Color.black
+                        ProgressView()
+                            .tint(.white)
+                            .scaleEffect(1.5)
                     }
                 }
+            } else {
+                VStack(spacing: 16) {
+                    Image(systemName: "photo.badge.exclamationmark")
+                        .font(.system(size: 48))
+                        .foregroundColor(.white.opacity(0.5))
+                    Text("Недоступно")
+                        .font(.subheadline)
+                        .foregroundColor(.white.opacity(0.6))
+                }
             }
-            
+
             if !story.textOverlay.isEmpty {
                 Text(story.textOverlay)
                     .font(.title2.weight(.bold))

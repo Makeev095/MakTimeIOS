@@ -188,6 +188,11 @@ class ChatViewModel: ObservableObject {
         return messages.first { $0.id == replyId }
     }
     
+    func sendCameraPhoto(image: UIImage) async {
+        guard let data = image.jpegData(compressionQuality: 0.8) else { return }
+        await sendPhoto(data: data)
+    }
+
     func handleSelectedPhoto() async {
         guard let item = selectedPhotoItem else { return }
         selectedPhotoItem = nil

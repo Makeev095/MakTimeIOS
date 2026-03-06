@@ -1,11 +1,45 @@
 import SwiftUI
 import PhotosUI
 
+struct CameraPickerView: UIViewControllerRepresentable {
+    let onCapture: (UIImage) -> Void
+    @Environment(\.dismiss) private var dismiss
+
+    func makeUIViewController(context: Context) -> UIImagePickerController {
+        let picker = UIImagePickerController()
+        picker.sourceType = .camera
+        picker.delegate = context.coordinator
+        return picker
+    }
+
+    func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
+
+    func makeCoordinator() -> Coordinator { Coordinator(self) }
+
+    class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+        let parent: CameraPickerView
+        init(_ parent: CameraPickerView) { self.parent = parent }
+
+        func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
+            if let image = info[.originalImage] as? UIImage {
+                parent.onCapture(image)
+            }
+            parent.dismiss()
+        }
+
+        func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+            parent.dismiss()
+        }
+    }
+}
+
 struct ChatInputView: View {
     @ObservedObject var vm: ChatViewModel
     var inputFocused: FocusState<Bool>.Binding
     @State private var showPhotoPicker = false
-    
+    @State private var showCamera = false
+    @State private var showAttachMenu = false
+
     var body: some View {
         VStack(spacing: 0) {
             if let reply = vm.replyTo {
@@ -35,7 +69,21 @@ struct ChatInputView: View {
             Divider().background(Theme.border)
             
             HStack(spacing: 8) {
-                Button { showPhotoPicker = true } label: {
+                Menu {
+                    Button {
+                        Task {
+                            let granted = await MediaService.requestCameraPermission()
+                            if granted { showCamera = true }
+                        }
+                    } label: {
+                        Label("Камера", systemImage: "camera")
+                    }
+                    Button {
+                        showPhotoPicker = true
+                    } label: {
+                        Label("Галерея", systemImage: "photo.on.rectangle")
+                    }
+                } label: {
                     Image(systemName: "paperclip")
                         .font(.title3)
                         .foregroundColor(Theme.textSecondary)
@@ -93,6 +141,12 @@ struct ChatInputView: View {
         .photosPicker(isPresented: $showPhotoPicker, selection: $vm.selectedPhotoItem, matching: .any(of: [.images, .videos]))
         .onChange(of: vm.selectedPhotoItem) { _ in
             Task { await vm.handleSelectedPhoto() }
+        }
+        .fullScreenCover(isPresented: $showCamera) {
+            CameraPickerView { image in
+                Task { await vm.sendCameraPhoto(image: image) }
+            }
+            .ignoresSafeArea()
         }
     }
 }
