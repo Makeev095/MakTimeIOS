@@ -67,7 +67,8 @@ class MediaService: NSObject, ObservableObject {
     private var videoTimer: Timer?
     var onVideoNoteReady: ((URL, TimeInterval) -> Void)?
 
-    func setupCaptureSession() throws -> AVCaptureSession {
+    @discardableResult
+    func setupCaptureSession() -> AVCaptureSession? {
         let session = AVCaptureSession()
         session.sessionPreset = .hd1280x720
 
@@ -75,8 +76,8 @@ class MediaService: NSObject, ObservableObject {
         guard let camera = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .front),
               let cameraInput = try? AVCaptureDeviceInput(device: camera),
               session.canAddInput(cameraInput) else {
-            throw NSError(domain: "MediaService", code: 1,
-                          userInfo: [NSLocalizedDescriptionKey: "Camera not available"])
+            print("MediaService: Camera not available")
+            return nil
         }
         session.addInput(cameraInput)
 

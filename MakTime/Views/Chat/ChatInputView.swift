@@ -62,28 +62,9 @@ struct ChatInputView: View {
                         RoundedRectangle(cornerRadius: Theme.radiusLg)
                             .stroke(Theme.glassBorder, lineWidth: 1)
                     )
-                    .submitLabel(.send)
-                    .onSubmit {
-                        let trimmed = vm.messageText.trimmingCharacters(in: .whitespacesAndNewlines)
-                        if !trimmed.isEmpty {
-                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                            vm.messageText = ""
-                            vm.sendTextMessageWith(trimmed)
-                        }
-                    }
-                    .onChange(of: vm.messageText) { newValue in
-                        if newValue.hasSuffix("\n") {
-                            let trimmed = String(newValue.dropLast()).trimmingCharacters(in: .whitespacesAndNewlines)
-                            if !trimmed.isEmpty {
-                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                                vm.messageText = ""
-                                vm.sendTextMessageWith(trimmed)
-                            } else {
-                                vm.messageText = ""
-                            }
-                        } else {
-                            vm.handleTyping()
-                        }
+                    .submitLabel(.return)
+                    .onChange(of: vm.messageText) { _ in
+                        vm.handleTyping()
                     }
 
                 // Right button: send / mic / video note

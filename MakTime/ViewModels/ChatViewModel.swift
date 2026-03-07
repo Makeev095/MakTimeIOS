@@ -172,12 +172,17 @@ class ChatViewModel: ObservableObject {
             )
             socketService?.sendMessage(
                 conversationId: conversation.id,
+                text: "",
                 type: "videoNote",
                 fileUrl: fileUrl,
                 fileName: "vnote.mp4",
-                duration: duration
+                duration: duration,
+                replyToId: replyTo?.id
             )
-        } catch {}
+            replyTo = nil
+        } catch {
+            print("VideoNote upload error: \(error)")
+        }
         try? FileManager.default.removeItem(at: url)
     }
     

@@ -172,7 +172,7 @@ final class VideoNoteRecorder: ObservableObject {
         }
         Task.detached(priority: .userInitiated) { [weak self] in
             guard let self else { return }
-            if let session = try? await self.mediaService.setupCaptureSession() {
+            if let session = self.mediaService.setupCaptureSession() {
                 session.startRunning()
             }
         }

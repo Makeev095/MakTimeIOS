@@ -18,6 +18,7 @@
 		212C4D77F51B8E36EFF4CA40 /* VideoCallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33F6B7AA0B363E3BF83835FC /* VideoCallView.swift */; };
 		2C6B2E3FF68AD5DE551989CA /* AvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71B452ED609BFC12F426FE49 /* AvatarView.swift */; };
 		2F6E85456917D2B428E75359 /* Story.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4791397EBFECEC2BC9C3E021 /* Story.swift */; };
+		30DAD6500D2702569D3756C7 /* CallPiPManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB4C3F162DC7C3F0F54ECCF3 /* CallPiPManager.swift */; };
 		333FD8B634361FEBE4C5306F /* CreatePostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80283A7DD81F19446892136D /* CreatePostView.swift */; };
 		370A2B9CE8363B5C8CA69B7B /* AuthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1E5FD92ECC72AB8DFF200F8 /* AuthView.swift */; };
 		3CDE9F4D289C34E6620D410C /* ConversationListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C0D373CB3DF0676AAE7D8C7 /* ConversationListView.swift */; };
@@ -94,6 +95,7 @@
 		9B9D4CBC609FD6713DE9BC05 /* StoryBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoryBarView.swift; sourceTree = "<group>"; };
 		A0A212077354E44CD512D6AE /* MakTimeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MakTimeApp.swift; sourceTree = "<group>"; };
 		A414177C4834BF5B0ECE6BEE /* MessageBubbleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageBubbleView.swift; sourceTree = "<group>"; };
+		AB4C3F162DC7C3F0F54ECCF3 /* CallPiPManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallPiPManager.swift; sourceTree = "<group>"; };
 		AFABD1E8A11EBFA21C652407 /* VideoCallViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoCallViewModel.swift; sourceTree = "<group>"; };
 		B17F82EEC97922522D8C3C90 /* CommentsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentsView.swift; sourceTree = "<group>"; };
 		BAE59B413D8D4D7CC23E7056 /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
@@ -240,6 +242,7 @@
 			children = (
 				41FA8626C3777277D3C63543 /* APIService.swift */,
 				00E92B43D16197A3CED6B6F3 /* AuthService.swift */,
+				AB4C3F162DC7C3F0F54ECCF3 /* CallPiPManager.swift */,
 				50B0B629BDBD3CB38F4AA5D6 /* MediaService.swift */,
 				D7A457364E24095F8B5D0CB5 /* SocketService.swift */,
 				7CE3A8969595FF645894EE8F /* WebRTCService.swift */,
@@ -409,6 +412,7 @@
 				47DBD60B7CB03C901D8F8562 /* AuthViewModel.swift in Sources */,
 				2C6B2E3FF68AD5DE551989CA /* AvatarView.swift in Sources */,
 				06C14558FC56D21425E50ED3 /* CachedImage.swift in Sources */,
+				30DAD6500D2702569D3756C7 /* CallPiPManager.swift in Sources */,
 				AE33445124117038247984E5 /* ChatInputView.swift in Sources */,
 				CF9506F3C37D067E96E80EC7 /* ChatView.swift in Sources */,
 				E206FBE510064CC93AD21A7C /* ChatViewModel.swift in Sources */,
