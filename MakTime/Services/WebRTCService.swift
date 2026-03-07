@@ -8,7 +8,7 @@ protocol WebRTCServiceDelegate: AnyObject {
     func webRTCService(_ service: WebRTCService, didGenerateICECandidate candidate: RTCIceCandidate)
 }
 
-class WebRTCService: NSObject {
+class WebRTCService: NSObject, @unchecked Sendable {
     weak var delegate: WebRTCServiceDelegate?
     
     private static let factory: RTCPeerConnectionFactory = {

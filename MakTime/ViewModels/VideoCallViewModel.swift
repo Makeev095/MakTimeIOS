@@ -59,9 +59,7 @@ class VideoCallViewModel: ObservableObject {
                 self.callTimeout?.invalidate()
                 self.stopRingtone()
                 self.status = .connecting
-                if self.target.isInitiator {
-                    Task { await self.createAndSendOffer() }
-                }
+                Task { await self.createAndSendOffer() }
             }
             .store(in: &cancellables)
         
@@ -134,7 +132,7 @@ class VideoCallViewModel: ObservableObject {
     private func startRingtone() {
         guard target.isInitiator else { return }
         let ctx = AVAudioSession.sharedInstance()
-        try? ctx.setCategory(.playAndRecord, mode: .voiceChat, options: [.defaultToSpeaker, .allowBluetooth])
+        try? ctx.setCategory(.playAndRecord, mode: .voiceChat, options: [.defaultToSpeaker, .allowBluetoothHFP])
         try? ctx.setActive(true)
         
         ringTimer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) { [weak self] _ in

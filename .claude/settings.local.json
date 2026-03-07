@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /Users/makey/Desktop/Проекты/MakTimeIOS/MakTime/Models -type f -name \"*.swift\" | xargs ls -la)",
+      "Bash(cd \"/Users/makey/Desktop/Проекты/MakTimeIOS\" && xcodebuild -scheme MakTime -destination 'platform=iOS Simulator,name=iPhone 16' build 2>&1 | tail -30)",
+      "Bash(cd \"/Users/makey/Desktop/Проекты/MakTimeIOS\" && xcodebuild -scheme MakTime -destination 'platform=iOS Simulator,id=EA39E36D-E76E-4D61-8472-957ECEA41102' build 2>&1 | grep -E \"\\(error:|BUILD|warning:.*VideoCallView|warning:.*StoryViewer|warning:.*ChatInput\\)\" | head -30)",
+      "Bash(cd \"/Users/makey/Desktop/Проекты/MakTimeIOS\" && xcodebuild -scheme MakTime -destination 'platform=iOS Simulator,id=EA39E36D-E76E-4D61-8472-957ECEA41102' build 2>&1 | grep -E \"\\(error:|BUILD\\)\" | head -20)",
+      "Bash(xcodebuild build -scheme MakTime -destination 'platform=iOS Simulator,name=iPhone 16' -quiet 2>&1 | tail -40)",
+      "Bash(cd \"/Users/makey/Desktop/Проекты/MakTimeIOS\" && xcodebuild build -project MakTime.xcodeproj -scheme MakTime -destination 'platform=iOS Simulator,id=EA39E36D-E76E-4D61-8472-957ECEA41102' 2>&1 | grep -E \"error:|BUILD SUCCEEDED|BUILD FAILED\" | head -30)"
+    ]
+  }
+}

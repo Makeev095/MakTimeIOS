@@ -5,7 +5,7 @@
     <key>CFBundleDevelopmentRegion</key>
     <string>ru</string>
     <key>CFBundleDisplayName</key>
-    <string>Makke</string>
+    <string>MakTime</string>
     <key>CFBundleExecutable</key>
     <string>$(EXECUTABLE_NAME)</string>
     <key>CFBundleIdentifier</key>
@@ -23,11 +23,11 @@
     <key>LSRequiresIPhoneOS</key>
     <true/>
     <key>NSCameraUsageDescription</key>
-    <string>Makke использует камеру для видеозвонков и отправки фото</string>
+    <string>MakTime использует камеру для видеозвонков и отправки фото</string>
     <key>NSMicrophoneUsageDescription</key>
-    <string>Makke использует микрофон для видеозвонков и голосовых сообщений</string>
+    <string>MakTime использует микрофон для видеозвонков и голосовых сообщений</string>
     <key>NSPhotoLibraryUsageDescription</key>
-    <string>Makke использует фотографию для отправки изображений и историй</string>
+    <string>MakTime использует фотографию для отправки изображений и историй</string>
     <key>UIApplicationSceneManifest</key>
     <dict>
         <key>UIApplicationSupportsMultipleScenes</key>
@@ -47,6 +47,8 @@
     <array>
         <string>armv7</string>
     </array>
+    <key>UIRequiresFullScreen</key>
+    <true/>
     <key>UISupportedInterfaceOrientations</key>
     <array>
         <string>UIInterfaceOrientationPortrait</string>
