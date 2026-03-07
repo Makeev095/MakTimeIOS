@@ -161,6 +161,25 @@ class ChatViewModel: ObservableObject {
     func cancelVoiceRecording() {
         mediaService.cancelVoiceRecording()
     }
+
+    func sendVideoNote(url: URL, duration: TimeInterval) async {
+        do {
+            let data = try Data(contentsOf: url)
+            let fileUrl = try await MediaService.uploadData(
+                data,
+                filename: "vnote_\(UUID().uuidString).mp4",
+                mimeType: "video/mp4"
+            )
+            socketService?.sendMessage(
+                conversationId: conversation.id,
+                type: "videoNote",
+                fileUrl: fileUrl,
+                fileName: "vnote.mp4",
+                duration: duration
+            )
+        } catch {}
+        try? FileManager.default.removeItem(at: url)
+    }
     
     func deleteMessage(_ message: Message) async {
         do {

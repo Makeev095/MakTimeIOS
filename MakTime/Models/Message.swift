@@ -46,6 +46,7 @@ enum MessageType: String, Codable {
     case voice
     case image
     case video
+    case videoNote
     case file
 }
 

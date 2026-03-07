@@ -1,23 +1,26 @@
 import SwiftUI
 
 struct Theme {
-    static let bgPrimary = Color(hex: "0F0F1A")
-    static let bgSecondary = Color(hex: "1A1A2E")
-    static let bgTertiary = Color(hex: "16213E")
-    static let bgHover = Color(hex: "1F2544")
-    static let bgActive = Color(hex: "2A2D5E")
-    
-    static let accent = Color(hex: "6C63FF")
-    static let accentHover = Color(hex: "5A52E0")
-    static let accentLight = Color(hex: "6C63FF").opacity(0.15)
+    // Backgrounds
+    static let bgPrimary    = Color(hex: "0F0F1A")
+    static let bgSecondary  = Color(hex: "1A1A2E")
+    static let bgTertiary   = Color(hex: "16213E")
+    static let bgHover      = Color(hex: "1F2544")
+    static let bgActive     = Color(hex: "2A2D5E")
+    static let bgCard       = Color(hex: "141428")
+
+    // Accent
+    static let accent          = Color(hex: "6C63FF")
+    static let accentHover     = Color(hex: "5A52E0")
+    static let accentLight     = Color(hex: "6C63FF").opacity(0.15)
     static let accentSecondary = Color(hex: "FF6584")
-    
+
+    // Gradients
     static let gradientAccent = LinearGradient(
         colors: [Color(hex: "6C63FF"), Color(hex: "FF6584")],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
-    
     static let gradientNeon = AngularGradient(
         gradient: Gradient(colors: [
             Color(hex: "F58529"),
@@ -28,24 +31,38 @@ struct Theme {
         ]),
         center: .center
     )
-    
-    static let textPrimary = Color(hex: "EAEAEA")
+    static let gradientSent = LinearGradient(
+        colors: [Color(hex: "6C63FF"), Color(hex: "9B59B6")],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+
+    // Text
+    static let textPrimary   = Color(hex: "EAEAEA")
     static let textSecondary = Color(hex: "8B8CA0")
-    static let textMuted = Color(hex: "555670")
-    
-    static let msgSent = Color(hex: "6C63FF")
+    static let textMuted     = Color(hex: "555670")
+
+    // Messages
+    static let msgSent     = Color(hex: "6C63FF")
     static let msgReceived = Color(hex: "1F2544")
-    
+
+    // Status
     static let success = Color(hex: "43AA8B")
-    static let danger = Color(hex: "F94144")
-    
-    static let border = Color.white.opacity(0.06)
+    static let danger  = Color(hex: "F94144")
+    static let warning = Color(hex: "F9844A")
+
+    // Borders
+    static let border      = Color.white.opacity(0.06)
     static let glassBorder = Color.white.opacity(0.12)
-    
-    static let radius: CGFloat = 12
+
+    // Corner radii
     static let radiusSm: CGFloat = 8
+    static let radius: CGFloat   = 12
+    static let radiusLg: CGFloat = 20
+    static let radiusXl: CGFloat = 28
 }
 
+// MARK: - Color init from hex
 extension Color {
     init(hex: String) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
@@ -72,13 +89,14 @@ extension Color {
     }
 }
 
+// MARK: - View modifiers
 extension View {
     func neonGlow(_ color: Color, radius: CGFloat = 8) -> some View {
         self
             .shadow(color: color.opacity(0.5), radius: radius / 2)
             .shadow(color: color.opacity(0.25), radius: radius)
     }
-    
+
     func glassCard(cornerRadius: CGFloat = Theme.radius) -> some View {
         self
             .background(.ultraThinMaterial)
