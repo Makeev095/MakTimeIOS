@@ -40,6 +40,7 @@ struct Theme {
     static let danger = Color(hex: "F94144")
     
     static let border = Color.white.opacity(0.06)
+    static let glassBorder = Color.white.opacity(0.12)
     
     static let radius: CGFloat = 12
     static let radiusSm: CGFloat = 8
@@ -76,5 +77,16 @@ extension View {
         self
             .shadow(color: color.opacity(0.5), radius: radius / 2)
             .shadow(color: color.opacity(0.25), radius: radius)
+    }
+    
+    func glassCard(cornerRadius: CGFloat = Theme.radius) -> some View {
+        self
+            .background(.ultraThinMaterial)
+            .background(Color.white.opacity(0.03))
+            .cornerRadius(cornerRadius)
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .stroke(Color.white.opacity(0.08), lineWidth: 1)
+            )
     }
 }
