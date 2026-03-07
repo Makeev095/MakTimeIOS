@@ -10,6 +10,7 @@ struct CreatePostView: View {
     @State private var previewImage: UIImage?
     @State private var caption = ""
     @State private var isPublishing = false
+    @State private var errorMessage: String?
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -17,7 +18,6 @@ struct CreatePostView: View {
             VStack(spacing: 0) {
                 ScrollView {
                     VStack(spacing: 16) {
-                        // Media picker
                         if let image = previewImage {
                             Image(uiImage: image)
                                 .resizable()
@@ -47,30 +47,37 @@ struct CreatePostView: View {
                                         .font(.system(size: 44))
                                         .foregroundColor(Theme.accent)
                                     Text("Выбрать фото")
-                                        .font(.subheadline)
+                                        .font(.system(.subheadline, design: .rounded))
                                         .foregroundColor(Theme.textSecondary)
                                 }
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 200)
-                                .background(Theme.bgTertiary)
+                                .background(.ultraThinMaterial)
                                 .cornerRadius(12)
+                                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Theme.border, lineWidth: 1))
                             }
                             .padding(.horizontal, 16)
                         }
 
-                        // Caption
                         TextField("Описание...", text: $caption, axis: .vertical)
                             .foregroundColor(Theme.textPrimary)
                             .lineLimit(1...8)
                             .padding(12)
-                            .background(Theme.bgTertiary)
+                            .background(.ultraThinMaterial)
                             .cornerRadius(12)
+                            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Theme.border, lineWidth: 1))
                             .padding(.horizontal, 16)
+
+                        if let error = errorMessage {
+                            Text(error)
+                                .font(.caption)
+                                .foregroundColor(Theme.danger)
+                                .padding(.horizontal, 16)
+                        }
                     }
                     .padding(.top, 16)
                 }
 
-                // Publish button
                 Button {
                     publish()
                 } label: {
@@ -80,13 +87,17 @@ struct CreatePostView: View {
                             .padding(.vertical, 14)
                     } else {
                         Text("Опубликовать")
-                            .font(.headline)
+                            .font(.system(.headline, design: .rounded))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 14)
                     }
                 }
-                .background(selectedImageData != nil ? Theme.accent : Theme.textMuted)
+                .background(
+                    selectedImageData != nil
+                    ? LinearGradient(colors: [Theme.accent, Theme.accentSecondary], startPoint: .leading, endPoint: .trailing)
+                    : LinearGradient(colors: [Theme.textMuted, Theme.textMuted], startPoint: .leading, endPoint: .trailing)
+                )
                 .cornerRadius(14)
                 .padding(16)
                 .disabled(selectedImageData == nil || isPublishing)
@@ -114,10 +125,13 @@ struct CreatePostView: View {
     private func publish() {
         guard let data = selectedImageData else { return }
         isPublishing = true
+        errorMessage = nil
         Task {
-            let success = await vm.publishPost(photoData: data, caption: caption)
+            let error = await vm.publishPost(photoData: data, caption: caption)
             isPublishing = false
-            if success {
+            if let error = error {
+                errorMessage = error
+            } else {
                 onClose()
             }
         }

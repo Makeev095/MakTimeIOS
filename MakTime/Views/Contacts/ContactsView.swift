@@ -6,7 +6,7 @@ struct ContactsView: View {
     @State private var searchQuery = ""
     @State private var searchResults: [User] = []
     var onSelectUser: ((User) -> Void)?
-    
+
     var filteredContacts: [User] {
         if searchQuery.isEmpty { return vm.contacts }
         return vm.contacts.filter {
@@ -14,7 +14,7 @@ struct ContactsView: View {
             $0.username.localizedCaseInsensitiveContains(searchQuery)
         }
     }
-    
+
     var body: some View {
         VStack(spacing: 0) {
             SearchBarView(text: $searchQuery, placeholder: "Найти пользователя...")
@@ -28,31 +28,33 @@ struct ContactsView: View {
                         }
                     } else { searchResults = [] }
                 }
-            
+
             if !searchResults.isEmpty && searchQuery.count >= 2 {
                 VStack(spacing: 0) {
                     Text("Результаты поиска")
-                        .font(.caption.weight(.medium))
+                        .font(.system(.caption, design: .rounded).weight(.medium))
                         .foregroundColor(Theme.textMuted)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 6)
-                    
+
                     ForEach(searchResults) { user in
                         userRow(user, showAdd: !vm.contacts.contains(where: { $0.id == user.id }))
                     }
-                    
+
                     Divider().background(Theme.border).padding(.vertical, 4)
                 }
             }
-            
+
             ScrollView {
                 if filteredContacts.isEmpty && !vm.isLoading {
                     VStack(spacing: 12) {
                         Image(systemName: "person.2")
                             .font(.system(size: 48))
-                            .foregroundColor(Theme.textMuted)
+                            .foregroundStyle(Theme.gradientAccent)
+                            .opacity(0.4)
                         Text("Нет контактов")
+                            .font(.system(.headline, design: .rounded))
                             .foregroundColor(Theme.textSecondary)
                     }
                     .frame(maxWidth: .infinity)
@@ -71,7 +73,7 @@ struct ContactsView: View {
         .background(Theme.bgPrimary)
         .task { await vm.loadContacts() }
     }
-    
+
     private func userRow(_ user: User, showAdd: Bool) -> some View {
         Button {
             if showAdd {
@@ -84,7 +86,7 @@ struct ContactsView: View {
                           showOnline: user.isOnline)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(user.displayName)
-                        .font(.subheadline.weight(.medium))
+                        .font(.system(.subheadline, design: .rounded).weight(.medium))
                         .foregroundColor(Theme.textPrimary)
                     Text("@\(user.username)")
                         .font(.caption)
@@ -93,7 +95,7 @@ struct ContactsView: View {
                 Spacer()
                 if showAdd {
                     Image(systemName: "person.badge.plus")
-                        .foregroundColor(Theme.accent)
+                        .foregroundStyle(Theme.gradientAccent)
                 }
             }
             .padding(.horizontal, 16)

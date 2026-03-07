@@ -7,12 +7,17 @@ class FeedViewModel: ObservableObject {
     @Published var posts: [Post] = []
     @Published var isLoading = false
     @Published var isRefreshing = false
+    @Published var loadError: String?
+    @Published var publishError: String?
 
     func loadPosts() async {
         isLoading = true
+        loadError = nil
         do {
             posts = try await APIService.shared.getPosts()
-        } catch {}
+        } catch {
+            loadError = "Не удалось загрузить ленту"
+        }
         isLoading = false
     }
 
@@ -20,6 +25,7 @@ class FeedViewModel: ObservableObject {
         isRefreshing = true
         do {
             posts = try await APIService.shared.getPosts()
+            loadError = nil
         } catch {}
         isRefreshing = false
     }
@@ -37,7 +43,6 @@ class FeedViewModel: ObservableObject {
                     try await APIService.shared.likePost(postId: post.id)
                 }
             } catch {
-                // Revert on error
                 if let idx = posts.firstIndex(where: { $0.id == post.id }) {
                     posts[idx].isLiked = wasLiked
                     posts[idx].likesCount += wasLiked ? 1 : -1
@@ -61,7 +66,8 @@ class FeedViewModel: ObservableObject {
         }
     }
 
-    func publishPost(photoData: Data, caption: String) async -> Bool {
+    func publishPost(photoData: Data, caption: String) async -> String? {
+        publishError = nil
         do {
             let fileUrl = try await MediaService.uploadData(
                 photoData,
@@ -74,13 +80,16 @@ class FeedViewModel: ObservableObject {
                 caption: caption
             )
             posts.insert(newPost, at: 0)
-            return true
+            return nil
         } catch {
-            return false
+            let msg = "Не удалось опубликовать: \(error.localizedDescription)"
+            publishError = msg
+            return msg
         }
     }
 
-    func publishVideoPost(videoData: Data, caption: String) async -> Bool {
+    func publishVideoPost(videoData: Data, caption: String) async -> String? {
+        publishError = nil
         do {
             let fileUrl = try await MediaService.uploadData(
                 videoData,
@@ -93,9 +102,11 @@ class FeedViewModel: ObservableObject {
                 caption: caption
             )
             posts.insert(newPost, at: 0)
-            return true
+            return nil
         } catch {
-            return false
+            let msg = "Не удалось опубликовать: \(error.localizedDescription)"
+            publishError = msg
+            return msg
         }
     }
 }

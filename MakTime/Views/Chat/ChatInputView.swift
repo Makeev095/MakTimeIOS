@@ -63,11 +63,11 @@ struct ChatInputView: View {
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
-                .background(Theme.bgTertiary)
+                .background(.ultraThinMaterial)
             }
-            
+
             Divider().background(Theme.border)
-            
+
             HStack(spacing: 8) {
                 Menu {
                     Button {
@@ -86,17 +86,18 @@ struct ChatInputView: View {
                 } label: {
                     Image(systemName: "paperclip")
                         .font(.title3)
-                        .foregroundColor(Theme.textSecondary)
+                        .foregroundStyle(Theme.gradientAccent)
                 }
-                
+
                 TextField("Сообщение...", text: $vm.messageText, axis: .vertical)
                     .foregroundColor(Theme.textPrimary)
                     .focused(inputFocused)
                     .lineLimit(1...5)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
-                    .background(Theme.bgTertiary)
+                    .background(Color.white.opacity(0.05))
                     .cornerRadius(20)
+                    .overlay(RoundedRectangle(cornerRadius: 20).stroke(Theme.border, lineWidth: 1))
                     .onChange(of: vm.messageText) { _ in
                         vm.handleTyping()
                     }
@@ -107,7 +108,7 @@ struct ChatInputView: View {
                             vm.sendTextMessage()
                         }
                     }
-                
+
                 if vm.messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                     Button {
                         if vm.isRecording {
@@ -130,13 +131,13 @@ struct ChatInputView: View {
                     } label: {
                         Image(systemName: "arrow.up.circle.fill")
                             .font(.title2)
-                            .foregroundColor(Theme.accent)
+                            .foregroundStyle(Theme.gradientAccent)
                     }
                 }
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
-            .background(Theme.bgSecondary)
+            .background(.ultraThinMaterial)
         }
         .photosPicker(isPresented: $showPhotoPicker, selection: $vm.selectedPhotoItem, matching: .any(of: [.images, .videos]))
         .onChange(of: vm.selectedPhotoItem) { _ in

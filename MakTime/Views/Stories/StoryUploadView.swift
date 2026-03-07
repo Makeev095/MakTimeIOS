@@ -4,20 +4,21 @@ import PhotosUI
 struct StoryUploadView: View {
     let onClose: () -> Void
     let onPublished: () -> Void
-    
+
     @State private var selectedItem: PhotosPickerItem?
     @State private var imageData: Data?
     @State private var textOverlay = ""
     @State private var isUploading = false
     @State private var showPicker = true
-    
+    @State private var errorMessage: String?
+
     private let bgColors = ["", "#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEAA7", "#DDA0DD", "#FF8C42"]
     @State private var selectedBgColor = ""
-    
+
     var body: some View {
         ZStack {
             Theme.bgPrimary.ignoresSafeArea()
-            
+
             VStack(spacing: 0) {
                 // Header
                 HStack {
@@ -28,52 +29,50 @@ struct StoryUploadView: View {
                     }
                     Spacer()
                     Text("Новая история")
-                        .font(.headline)
+                        .font(.system(.headline, design: .rounded))
                         .foregroundColor(Theme.textPrimary)
                     Spacer()
                     if imageData != nil {
                         Button("Опубликовать") { publish() }
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundColor(Theme.accent)
+                            .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                            .foregroundStyle(Theme.gradientAccent)
                             .disabled(isUploading)
                     }
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
-                
+
                 if let data = imageData, let uiImage = UIImage(data: data) {
-                    // Preview
                     ZStack {
                         Image(uiImage: uiImage)
                             .resizable()
                             .scaledToFit()
                             .frame(maxHeight: 400)
                             .cornerRadius(16)
-                        
+
                         if !textOverlay.isEmpty {
                             Text(textOverlay)
-                                .font(.title2.weight(.bold))
+                                .font(.system(.title2, design: .rounded).weight(.bold))
                                 .foregroundColor(.white)
                                 .shadow(radius: 4)
                         }
                     }
                     .padding()
-                    
-                    // Text overlay input
+
                     TextField("Добавить текст...", text: $textOverlay)
                         .foregroundColor(Theme.textPrimary)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 10)
-                        .background(Theme.bgTertiary)
+                        .background(Color.white.opacity(0.05))
                         .cornerRadius(Theme.radiusSm)
+                        .overlay(RoundedRectangle(cornerRadius: Theme.radiusSm).stroke(Theme.border, lineWidth: 1))
                         .padding(.horizontal, 16)
-                    
-                    // Background colors
+
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 10) {
                             ForEach(bgColors, id: \.self) { color in
                                 Circle()
-                                    .fill(color.isEmpty ? Theme.bgTertiary : Color(hex: color))
+                                    .fill(color.isEmpty ? Color.white.opacity(0.06) : Color(hex: color))
                                     .frame(width: 32, height: 32)
                                     .overlay(
                                         Circle().stroke(selectedBgColor == color ? Theme.accent : Color.clear, lineWidth: 2)
@@ -84,24 +83,32 @@ struct StoryUploadView: View {
                         .padding(.horizontal, 16)
                         .padding(.vertical, 12)
                     }
-                    
+
                     if isUploading {
                         ProgressView("Загрузка...")
                             .tint(Theme.accent)
                             .foregroundColor(Theme.textSecondary)
                             .padding()
                     }
-                    
+
+                    if let error = errorMessage {
+                        Text(error)
+                            .font(.caption)
+                            .foregroundColor(Theme.danger)
+                            .padding(.horizontal, 16)
+                    }
+
                     Spacer()
                 } else {
                     Spacer()
-                    
+
                     PhotosPicker(selection: $selectedItem, matching: .any(of: [.images, .videos])) {
                         VStack(spacing: 16) {
                             Image(systemName: "photo.on.rectangle.angled")
                                 .font(.system(size: 48))
-                                .foregroundColor(Theme.accent)
+                                .foregroundStyle(Theme.gradientAccent)
                             Text("Выберите фото или видео")
+                                .font(.system(.subheadline, design: .rounded))
                                 .foregroundColor(Theme.textSecondary)
                         }
                     }
@@ -112,16 +119,17 @@ struct StoryUploadView: View {
                             }
                         }
                     }
-                    
+
                     Spacer()
                 }
             }
         }
     }
-    
+
     private func publish() {
         guard let data = imageData else { return }
         isUploading = true
+        errorMessage = nil
         Task {
             do {
                 let fileUrl = try await MediaService.uploadData(data, filename: "story_\(UUID().uuidString).jpg", mimeType: "image/jpeg")
@@ -133,7 +141,9 @@ struct StoryUploadView: View {
                 )
                 onPublished()
                 onClose()
-            } catch {}
+            } catch {
+                errorMessage = "Не удалось загрузить историю"
+            }
             isUploading = false
         }
     }

@@ -15,11 +15,9 @@ struct VideoCallView: View {
     @State private var pulse2 = false
     @State private var pulse3 = false
 
-    // Draggable local video
     @State private var localVideoCorner: Corner = .topTrailing
     @State private var localVideoDragOffset: CGSize = .zero
 
-    // Draggable PiP
     @State private var pipPosition: CGPoint = .zero
     @State private var pipInitialized = false
 
@@ -65,46 +63,39 @@ struct VideoCallView: View {
         vm.status == .calling || vm.status == .connecting
     }
 
-    // MARK: - Fullscreen View (no GeometryReader wrapping everything)
-
     private var fullscreenView: some View {
         ZStack {
-            // Background
             if vm.status == .connected, vm.remoteVideoTrack != nil {
                 Color.black.ignoresSafeArea()
             } else {
                 callingBackground
             }
 
-            // Remote video (only when connected)
             if let remoteTrack = vm.remoteVideoTrack, vm.status == .connected {
                 WebRTCVideoView(track: remoteTrack)
                     .ignoresSafeArea()
                     .transition(.opacity)
             }
 
-            // Calling/connecting state - avatar + name
             if isWaiting || vm.remoteVideoTrack == nil {
                 waitingOverlay
             }
 
-            // Local video (draggable, snaps to corners)
             if vm.status == .connected {
                 if let localTrack = vm.webRTCService.localStream {
                     localVideoView(track: localTrack)
                 }
             }
 
-            // Top bar (when connected)
             if vm.status == .connected {
                 VStack {
                     HStack {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(target.name)
-                                .font(.headline)
+                                .font(.system(.headline, design: .rounded))
                                 .foregroundColor(.white)
                             Text(vm.statusText)
-                                .font(.subheadline)
+                                .font(.system(.subheadline, design: .rounded))
                                 .foregroundColor(.white.opacity(0.7))
                         }
                         Spacer()
@@ -113,8 +104,7 @@ struct VideoCallView: View {
                                 .font(.title3)
                                 .foregroundColor(.white)
                                 .padding(8)
-                                .background(.ultraThinMaterial)
-                                .clipShape(Circle())
+                                .glassCard(cornerRadius: 20)
                         }
                     }
                     .padding(.horizontal, 20)
@@ -123,13 +113,12 @@ struct VideoCallView: View {
                 }
             }
 
-            // Controls
             VStack {
                 Spacer()
 
                 if vm.status == .rejected || vm.status == .unavailable || vm.status == .error {
                     Text(vm.statusText)
-                        .font(.headline)
+                        .font(.system(.headline, design: .rounded))
                         .foregroundColor(.white.opacity(0.8))
                         .padding(.bottom, 20)
                 }
@@ -147,8 +136,7 @@ struct VideoCallView: View {
                                 .font(.title3)
                                 .foregroundColor(.white)
                                 .frame(width: 50, height: 50)
-                                .background(.white.opacity(0.2))
-                                .clipShape(Circle())
+                                .glassCard(cornerRadius: 25)
                         }
                     }
 
@@ -159,7 +147,7 @@ struct VideoCallView: View {
                             .frame(width: 64, height: 64)
                             .background(Theme.danger)
                             .clipShape(Circle())
-                            .shadow(color: Theme.danger.opacity(0.4), radius: 8)
+                            .neonGlow(Theme.danger, radius: 10)
                     }
                 }
                 .padding(.bottom, 50)
@@ -168,13 +156,12 @@ struct VideoCallView: View {
         .animation(.easeInOut(duration: 0.5), value: vm.status == .connected)
     }
 
-    // MARK: - Local Video (draggable with corner snap)
-
     private func localVideoView(track: RTCVideoTrack) -> some View {
         GeometryReader { geo in
             WebRTCVideoView(track: track, mirror: true)
                 .frame(width: localVideoSize.width, height: localVideoSize.height)
                 .cornerRadius(14)
+                .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.glassBorder, lineWidth: 1))
                 .shadow(color: .black.opacity(0.4), radius: 8)
                 .position(positionForCorner(localVideoCorner, in: geo.size))
                 .offset(localVideoDragOffset)
@@ -228,15 +215,13 @@ struct VideoCallView: View {
         }) ?? .topTrailing
     }
 
-    // MARK: - Calling Background with Animations
-
     private var callingBackground: some View {
         ZStack {
             LinearGradient(
                 colors: [
-                    Color(hex: "0F0F2D"),
-                    Color(hex: "1A1145"),
-                    Color(hex: "0D0D26")
+                    Color(hex: "08080F"),
+                    Color(hex: "0E0E1A"),
+                    Color(hex: "141428")
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
@@ -249,12 +234,12 @@ struct VideoCallView: View {
                 .animation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true), value: pulse1)
 
             Circle()
-                .fill(Theme.accent.opacity(0.05))
+                .fill(Theme.accentSecondary.opacity(0.05))
                 .frame(width: pulse2 ? 450 : 280)
                 .animation(.easeInOut(duration: 2.5).repeatForever(autoreverses: true).delay(0.3), value: pulse2)
 
             Circle()
-                .fill(Theme.accent.opacity(0.03))
+                .fill(Color(hex: "EC4899").opacity(0.03))
                 .frame(width: pulse3 ? 550 : 350)
                 .animation(.easeInOut(duration: 3.0).repeatForever(autoreverses: true).delay(0.6), value: pulse3)
         }
@@ -264,8 +249,6 @@ struct VideoCallView: View {
             pulse3 = true
         }
     }
-
-    // MARK: - Waiting Overlay
 
     private var waitingOverlay: some View {
         VStack(spacing: 20) {
@@ -278,21 +261,21 @@ struct VideoCallView: View {
                     .animation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true), value: pulse1)
 
                 Circle()
-                    .fill(Theme.accent.opacity(0.1))
+                    .fill(Theme.accentSecondary.opacity(0.08))
                     .frame(width: pulse2 ? 190 : 150)
                     .animation(.easeInOut(duration: 1.8).repeatForever(autoreverses: true).delay(0.2), value: pulse2)
 
-                AvatarView(name: target.name, color: "#6C63FF", size: 110)
-                    .shadow(color: Theme.accent.opacity(0.3), radius: 20)
+                AvatarView(name: target.name, color: "#8B5CF6", size: 110)
+                    .neonGlow(Theme.accent, radius: 20)
             }
 
             VStack(spacing: 8) {
                 Text(target.name)
-                    .font(.system(size: 28, weight: .bold))
+                    .font(.system(size: 28, weight: .bold, design: .rounded))
                     .foregroundColor(.white)
 
                 Text(vm.statusText)
-                    .font(.subheadline)
+                    .font(.system(.subheadline, design: .rounded))
                     .foregroundColor(.white.opacity(0.6))
             }
 
@@ -301,34 +284,30 @@ struct VideoCallView: View {
         }
     }
 
-    // MARK: - PiP View (Telegram-style floating window)
-
     private var pipView: some View {
         GeometryReader { geo in
             ZStack {
-                // Video or avatar content
                 if let remoteTrack = vm.remoteVideoTrack, vm.status == .connected {
                     WebRTCVideoView(track: remoteTrack)
                 } else {
                     LinearGradient(
-                        colors: [Color(hex: "1A1145"), Color(hex: "0D0D26")],
+                        colors: [Color(hex: "0E0E1A"), Color(hex: "141428")],
                         startPoint: .top,
                         endPoint: .bottom
                     )
-                    AvatarView(name: target.name, color: "#6C63FF", size: 50)
+                    AvatarView(name: target.name, color: "#8B5CF6", size: 50)
                 }
 
-                // Overlay info
                 VStack {
                     Spacer()
                     HStack(spacing: 6) {
                         VStack(alignment: .leading, spacing: 1) {
                             Text(target.name)
-                                .font(.system(size: 11, weight: .semibold))
+                                .font(.system(size: 11, weight: .semibold, design: .rounded))
                                 .foregroundColor(.white)
                                 .lineLimit(1)
                             Text(vm.statusText)
-                                .font(.system(size: 9))
+                                .font(.system(size: 9, design: .rounded))
                                 .foregroundColor(.white.opacity(0.7))
                         }
                         Spacer()
@@ -355,6 +334,7 @@ struct VideoCallView: View {
             }
             .frame(width: pipSize.width, height: pipSize.height)
             .cornerRadius(16)
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Theme.glassBorder, lineWidth: 1))
             .shadow(color: .black.opacity(0.5), radius: 12, x: 0, y: 4)
             .position(pipInitialized ? pipPosition : defaultPipPosition(in: geo))
             .gesture(
@@ -412,8 +392,9 @@ struct VideoCallView: View {
                 .font(.title3)
                 .foregroundColor(.white)
                 .frame(width: 50, height: 50)
-                .background(isActive ? Theme.danger.opacity(0.7) : .white.opacity(0.2))
+                .background(isActive ? Theme.danger.opacity(0.7) : Color.white.opacity(0.12))
                 .clipShape(Circle())
+                .overlay(Circle().stroke(Theme.glassBorder, lineWidth: 1))
         }
     }
 }

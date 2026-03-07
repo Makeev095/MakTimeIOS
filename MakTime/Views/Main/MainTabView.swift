@@ -11,7 +11,7 @@ struct MainTabView: View {
     @State private var showStoryViewer = false
     @State private var storyViewData: (users: [StoryUser], startIdx: Int)?
     @State private var showStoryUpload = false
-    
+
     var body: some View {
         ZStack {
             NavigationStack {
@@ -21,10 +21,10 @@ struct MainTabView: View {
                             Label("Чаты", systemImage: "message.fill")
                         }
                         .tag(0)
-                    
+
                     FeedView()
                         .tabItem {
-                            Label("Лента", systemImage: "square.grid.2x2")
+                            Label("Лента", systemImage: "square.grid.2x2.fill")
                         }
                         .tag(3)
 
@@ -41,7 +41,7 @@ struct MainTabView: View {
                         Label("Контакты", systemImage: "person.2.fill")
                     }
                     .tag(1)
-                    
+
                     SettingsView()
                         .tabItem {
                             Label("Настройки", systemImage: "gearshape.fill")
@@ -63,7 +63,7 @@ struct MainTabView: View {
                     navigateToChat = newValue != nil
                 }
             }
-            
+
             if let incoming = socketService.incomingCall, callTarget == nil {
                 IncomingCallOverlay(
                     call: incoming,
@@ -82,7 +82,7 @@ struct MainTabView: View {
                     }
                 )
             }
-            
+
             if let target = callTarget {
                 VideoCallView(
                     target: target,
@@ -111,7 +111,7 @@ struct MainTabView: View {
             )
         }
     }
-    
+
     private var chatsTab: some View {
         VStack(spacing: 0) {
             StoryBarView(
@@ -121,9 +121,9 @@ struct MainTabView: View {
                 },
                 onAddStory: { showStoryUpload = true }
             )
-            
+
             Divider().background(Theme.border)
-            
+
             ConversationListView(
                 selectedConversation: $selectedConversation,
                 onStartCall: { userId, name, convId in

@@ -11,15 +11,15 @@ struct FeedView: View {
             // Header
             HStack {
                 Text("Лента")
-                    .font(.title2.weight(.bold))
+                    .font(.system(size: 24, weight: .bold, design: .rounded))
                     .foregroundColor(Theme.textPrimary)
                 Spacer()
                 Button {
                     showCreatePost = true
                 } label: {
-                    Image(systemName: "plus.square")
+                    Image(systemName: "plus.square.fill")
                         .font(.title2)
-                        .foregroundColor(Theme.accent)
+                        .foregroundStyle(Theme.gradientAccent)
                 }
             }
             .padding(.horizontal, 16)
@@ -29,30 +29,55 @@ struct FeedView: View {
 
             if vm.isLoading && vm.posts.isEmpty {
                 Spacer()
-                ProgressView().tint(Theme.textMuted)
+                ProgressView().tint(Theme.accent)
+                Spacer()
+            } else if let error = vm.loadError, vm.posts.isEmpty {
+                Spacer()
+                VStack(spacing: 12) {
+                    Image(systemName: "wifi.exclamationmark")
+                        .font(.system(size: 50))
+                        .foregroundStyle(Theme.gradientAccent)
+                        .opacity(0.4)
+                    Text(error)
+                        .font(.system(.headline, design: .rounded))
+                        .foregroundColor(Theme.textSecondary)
+                    Button {
+                        Task { await vm.loadPosts() }
+                    } label: {
+                        Text("Повторить")
+                            .font(.system(.subheadline, design: .rounded).weight(.medium))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 24)
+                            .padding(.vertical, 10)
+                            .background(Theme.gradientAccent)
+                            .cornerRadius(20)
+                    }
+                }
                 Spacer()
             } else if vm.posts.isEmpty {
                 Spacer()
                 VStack(spacing: 12) {
                     Image(systemName: "photo.on.rectangle.angled")
                         .font(.system(size: 50))
-                        .foregroundColor(Theme.textMuted)
+                        .foregroundStyle(Theme.gradientAccent)
+                        .opacity(0.4)
                     Text("Пока нет публикаций")
-                        .font(.headline)
+                        .font(.system(.headline, design: .rounded))
                         .foregroundColor(Theme.textSecondary)
                     Text("Будьте первым — поделитесь фото!")
-                        .font(.subheadline)
+                        .font(.system(.subheadline, design: .rounded))
                         .foregroundColor(Theme.textMuted)
                     Button {
                         showCreatePost = true
                     } label: {
                         Text("Создать пост")
-                            .font(.subheadline.weight(.medium))
+                            .font(.system(.subheadline, design: .rounded).weight(.medium))
                             .foregroundColor(.white)
                             .padding(.horizontal, 24)
                             .padding(.vertical, 10)
-                            .background(Theme.accent)
+                            .background(Theme.gradientAccent)
                             .cornerRadius(20)
+                            .neonGlow(Theme.accent, radius: 6)
                     }
                     .padding(.top, 4)
                 }

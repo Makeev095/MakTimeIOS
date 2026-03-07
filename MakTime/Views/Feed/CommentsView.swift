@@ -12,16 +12,17 @@ struct CommentsView: View {
             VStack(spacing: 0) {
                 if isLoading {
                     Spacer()
-                    ProgressView().tint(Theme.textMuted)
+                    ProgressView().tint(Theme.accent)
                     Spacer()
                 } else if comments.isEmpty {
                     Spacer()
                     VStack(spacing: 8) {
                         Image(systemName: "bubble.left.and.bubble.right")
                             .font(.system(size: 40))
-                            .foregroundColor(Theme.textMuted)
+                            .foregroundStyle(Theme.gradientAccent)
+                            .opacity(0.4)
                         Text("Пока нет комментариев")
-                            .font(.subheadline)
+                            .font(.system(.subheadline, design: .rounded))
                             .foregroundColor(Theme.textSecondary)
                     }
                     Spacer()
@@ -38,14 +39,14 @@ struct CommentsView: View {
 
                 Divider().background(Theme.border)
 
-                // Input
                 HStack(spacing: 8) {
                     TextField("Комментарий...", text: $newComment)
                         .foregroundColor(Theme.textPrimary)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)
-                        .background(Theme.bgTertiary)
+                        .background(Color.white.opacity(0.05))
                         .cornerRadius(20)
+                        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Theme.border, lineWidth: 1))
 
                     if !newComment.trimmingCharacters(in: .whitespaces).isEmpty {
                         Button {
@@ -53,13 +54,13 @@ struct CommentsView: View {
                         } label: {
                             Image(systemName: "arrow.up.circle.fill")
                                 .font(.title2)
-                                .foregroundColor(Theme.accent)
+                                .foregroundStyle(Theme.gradientAccent)
                         }
                     }
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
-                .background(Theme.bgSecondary)
+                .background(.ultraThinMaterial)
             }
             .background(Theme.bgPrimary)
             .navigationTitle("Комментарии")
@@ -82,14 +83,14 @@ struct CommentsView: View {
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
                     Text(comment.authorName)
-                        .font(.caption.weight(.semibold))
+                        .font(.system(.caption, design: .rounded).weight(.semibold))
                         .foregroundColor(Theme.textPrimary)
                     Text(comment.timeAgo)
                         .font(.caption2)
                         .foregroundColor(Theme.textMuted)
                 }
                 Text(comment.text)
-                    .font(.subheadline)
+                    .font(.system(.subheadline, design: .rounded))
                     .foregroundColor(Theme.textPrimary)
             }
         }

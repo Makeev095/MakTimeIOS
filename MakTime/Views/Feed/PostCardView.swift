@@ -18,7 +18,7 @@ struct PostCardView: View {
                 AvatarView(name: post.authorName, color: post.authorAvatarColor, size: 36)
                 VStack(alignment: .leading, spacing: 1) {
                     Text(post.authorName)
-                        .font(.subheadline.weight(.semibold))
+                        .font(.system(.subheadline, design: .rounded).weight(.semibold))
                         .foregroundColor(Theme.textPrimary)
                     Text(post.timeAgo)
                         .font(.caption2)
@@ -60,7 +60,7 @@ struct PostCardView: View {
                                 .clipped()
                         case .failure:
                             Rectangle()
-                                .fill(Theme.bgTertiary)
+                                .fill(Color.white.opacity(0.04))
                                 .frame(height: 300)
                                 .overlay(
                                     Image(systemName: "photo")
@@ -69,19 +69,18 @@ struct PostCardView: View {
                                 )
                         default:
                             Rectangle()
-                                .fill(Theme.bgTertiary)
+                                .fill(Color.white.opacity(0.04))
                                 .frame(height: 300)
-                                .overlay(ProgressView().tint(Theme.textMuted))
+                                .overlay(ProgressView().tint(Theme.accent))
                         }
                     }
                 }
 
-                // Double tap heart animation
                 if showDoubleTapHeart {
                     Image(systemName: "heart.fill")
                         .font(.system(size: 80))
-                        .foregroundColor(.white)
-                        .shadow(color: .black.opacity(0.3), radius: 8)
+                        .foregroundStyle(Theme.gradientAccent)
+                        .shadow(color: Theme.accent.opacity(0.6), radius: 12)
                         .transition(.scale.combined(with: .opacity))
                 }
             }
@@ -102,7 +101,9 @@ struct PostCardView: View {
                 Button(action: onLike) {
                     Image(systemName: post.isLiked ? "heart.fill" : "heart")
                         .font(.title3)
-                        .foregroundColor(post.isLiked ? .red : Theme.textPrimary)
+                        .foregroundColor(post.isLiked ? Theme.danger : Theme.textPrimary)
+                        .scaleEffect(post.isLiked ? 1.1 : 1.0)
+                        .animation(.spring(response: 0.3), value: post.isLiked)
                 }
 
                 Button(action: onComment) {
@@ -123,21 +124,19 @@ struct PostCardView: View {
             .padding(.top, 10)
             .padding(.bottom, 6)
 
-            // Likes count
             if post.likesCount > 0 {
                 Text(likesText)
-                    .font(.subheadline.weight(.semibold))
+                    .font(.system(.subheadline, design: .rounded).weight(.semibold))
                     .foregroundColor(Theme.textPrimary)
                     .padding(.horizontal, 14)
                     .padding(.bottom, 4)
             }
 
-            // Caption
             if !post.caption.isEmpty {
                 HStack(alignment: .top, spacing: 4) {
-                    Text(post.authorName).font(.subheadline.weight(.semibold))
+                    Text(post.authorName).font(.system(.subheadline, design: .rounded).weight(.semibold))
                     + Text(" ")
-                    + Text(post.caption).font(.subheadline)
+                    + Text(post.caption).font(.system(.subheadline, design: .rounded))
                 }
                 .foregroundColor(Theme.textPrimary)
                 .lineLimit(3)
@@ -145,11 +144,10 @@ struct PostCardView: View {
                 .padding(.bottom, 4)
             }
 
-            // Comments count
             if post.commentsCount > 0 {
                 Button(action: onComment) {
                     Text("Показать комментарии (\(post.commentsCount))")
-                        .font(.caption)
+                        .font(.system(.caption, design: .rounded))
                         .foregroundColor(Theme.textMuted)
                 }
                 .padding(.horizontal, 14)

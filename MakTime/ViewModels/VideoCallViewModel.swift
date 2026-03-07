@@ -59,7 +59,9 @@ class VideoCallViewModel: ObservableObject {
                 self.callTimeout?.invalidate()
                 self.stopRingtone()
                 self.status = .connecting
-                Task { await self.createAndSendOffer() }
+                if self.target.isInitiator {
+                    Task { await self.createAndSendOffer() }
+                }
             }
             .store(in: &cancellables)
         
