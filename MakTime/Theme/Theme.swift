@@ -18,6 +18,17 @@ struct Theme {
         endPoint: .bottomTrailing
     )
     
+    static let gradientNeon = AngularGradient(
+        gradient: Gradient(colors: [
+            Color(hex: "F58529"),
+            Color(hex: "DD2A7B"),
+            Color(hex: "8134AF"),
+            Color(hex: "515BD4"),
+            Color(hex: "F58529"),
+        ]),
+        center: .center
+    )
+    
     static let textPrimary = Color(hex: "EAEAEA")
     static let textSecondary = Color(hex: "8B8CA0")
     static let textMuted = Color(hex: "555670")
