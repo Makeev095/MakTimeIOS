@@ -94,15 +94,7 @@ struct MessageBubbleView: View {
             .foregroundColor(.white)
             .padding(.horizontal, 14)
             .padding(.vertical, 10)
-            .background(
-                Group {
-                    if isMine {
-                        AnyShapeStyle(Theme.gradientSent)
-                    } else {
-                        AnyShapeStyle(Theme.bgHover)
-                    }
-                }
-            )
+            .background(isMine ? AnyShapeStyle(Theme.gradientSent) : AnyShapeStyle(Theme.bgHover))
             .clipShape(
                 RoundedRectangle(cornerRadius: Theme.radiusLg)
             )
