@@ -26,10 +26,7 @@ struct Message: Codable, Identifiable, Equatable {
     var fullFileUrl: String? {
         guard let fileUrl = fileUrl else { return nil }
         if fileUrl.hasPrefix("http") { return fileUrl }
-        if fileUrl.hasPrefix("/") {
-            return "\(AppConfig.baseURL)\(fileUrl)"
-        }
-        return "\(AppConfig.baseURL)/\(fileUrl)"
+        return "\(AppConfig.baseURL)\(fileUrl)"
     }
     
     var dateFormatted: String {

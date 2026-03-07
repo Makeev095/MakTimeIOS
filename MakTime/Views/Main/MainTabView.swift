@@ -11,7 +11,7 @@ struct MainTabView: View {
     @State private var showStoryViewer = false
     @State private var storyViewData: (users: [StoryUser], startIdx: Int)?
     @State private var showStoryUpload = false
-
+    
     var body: some View {
         ZStack {
             NavigationStack {
@@ -21,17 +21,16 @@ struct MainTabView: View {
                             Label("Чаты", systemImage: "message.fill")
                         }
                         .tag(0)
-
+                    
                     FeedView()
                         .tabItem {
                             Label("Лента", systemImage: "square.grid.2x2.fill")
                         }
-                        .tag(3)
-
+                        .tag(1)
+                    
                     ContactsView { user in
                         Task {
-                            let conv = try? await APIService.shared.createConversation(participantId: user.id)
-                            if let conv = conv {
+                            if let conv = try? await APIService.shared.createConversation(participantId: user.id) {
                                 selectedConversation = conv
                                 selectedTab = 0
                             }
@@ -40,13 +39,13 @@ struct MainTabView: View {
                     .tabItem {
                         Label("Контакты", systemImage: "person.2.fill")
                     }
-                    .tag(1)
-
+                    .tag(2)
+                    
                     SettingsView()
                         .tabItem {
                             Label("Настройки", systemImage: "gearshape.fill")
                         }
-                        .tag(2)
+                        .tag(3)
                 }
                 .tint(Theme.accent)
                 .navigationDestination(isPresented: $navigateToChat) {
@@ -62,8 +61,16 @@ struct MainTabView: View {
                 .onChange(of: selectedConversation) { newValue in
                     navigateToChat = newValue != nil
                 }
+                // Fix: clear selectedConversation when user navigates back from chat
+                .onChange(of: navigateToChat) { isPresented in
+                    if !isPresented {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            selectedConversation = nil
+                        }
+                    }
+                }
             }
-
+            
             if let incoming = socketService.incomingCall, callTarget == nil {
                 IncomingCallOverlay(
                     call: incoming,
@@ -82,7 +89,7 @@ struct MainTabView: View {
                     }
                 )
             }
-
+            
             if let target = callTarget {
                 VideoCallView(
                     target: target,
@@ -111,7 +118,7 @@ struct MainTabView: View {
             )
         }
     }
-
+    
     private var chatsTab: some View {
         VStack(spacing: 0) {
             StoryBarView(
@@ -121,9 +128,9 @@ struct MainTabView: View {
                 },
                 onAddStory: { showStoryUpload = true }
             )
-
+            
             Divider().background(Theme.border)
-
+            
             ConversationListView(
                 selectedConversation: $selectedConversation,
                 onStartCall: { userId, name, convId in

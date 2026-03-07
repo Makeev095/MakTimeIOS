@@ -89,11 +89,15 @@ class ChatViewModel: ObservableObject {
     }
     
     func sendTextMessage() {
-        let text = messageText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !text.isEmpty else { return }
+        sendTextMessageWith(messageText)
+    }
+    
+    func sendTextMessageWith(_ text: String) {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
         socketService?.sendMessage(
             conversationId: conversation.id,
-            text: text,
+            text: trimmed,
             replyToId: replyTo?.id
         )
         messageText = ""
@@ -188,11 +192,6 @@ class ChatViewModel: ObservableObject {
         return messages.first { $0.id == replyId }
     }
     
-    func sendCameraPhoto(image: UIImage) async {
-        guard let data = image.jpegData(compressionQuality: 0.8) else { return }
-        await sendPhoto(data: data)
-    }
-
     func handleSelectedPhoto() async {
         guard let item = selectedPhotoItem else { return }
         selectedPhotoItem = nil

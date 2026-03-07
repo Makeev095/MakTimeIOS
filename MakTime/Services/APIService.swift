@@ -172,42 +172,42 @@ actor APIService {
         return try await get("/stories/\(storyId)/reactions")
     }
     
-    // MARK: - Posts (Feed)
-
-    func getPosts() async throws -> [Post] {
-        return try await get("/posts")
+    // MARK: - Feed / Posts
+    
+    func getPosts(limit: Int = 30, offset: Int = 0) async throws -> [Post] {
+        return try await get("/posts?limit=\(limit)&offset=\(offset)")
     }
-
+    
     func createPost(type: String, fileUrl: String, caption: String) async throws -> Post {
         let body: [String: Any] = ["type": type, "fileUrl": fileUrl, "caption": caption]
         return try await post("/posts", body: body)
     }
-
+    
     func likePost(postId: String) async throws {
         let _: EmptyResponse = try await post("/posts/\(postId)/like", body: [:])
     }
-
+    
     func unlikePost(postId: String) async throws {
         let _: EmptyResponse = try await request("DELETE", path: "/posts/\(postId)/like")
     }
-
+    
+    func repostPost(postId: String) async throws {
+        let _: EmptyResponse = try await post("/posts/\(postId)/repost", body: [:])
+    }
+    
+    func deletePost(postId: String) async throws {
+        let _: EmptyResponse = try await request("DELETE", path: "/posts/\(postId)")
+    }
+    
     func getComments(postId: String) async throws -> [PostComment] {
         return try await get("/posts/\(postId)/comments")
     }
-
+    
     func addComment(postId: String, text: String) async throws -> PostComment {
         let body: [String: Any] = ["text": text]
         return try await post("/posts/\(postId)/comments", body: body)
     }
-
-    func repostPost(postId: String) async throws {
-        let _: EmptyResponse = try await post("/posts/\(postId)/repost", body: [:])
-    }
-
-    func deletePost(postId: String) async throws {
-        let _: EmptyResponse = try await request("DELETE", path: "/posts/\(postId)")
-    }
-
+    
     // MARK: - Private helpers
     
     private struct EmptyResponse: Codable {}

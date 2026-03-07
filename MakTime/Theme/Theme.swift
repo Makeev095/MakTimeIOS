@@ -1,90 +1,38 @@
 import SwiftUI
 
 struct Theme {
-    // Backgrounds
-    static let bgPrimary = Color(hex: "08080F")
-    static let bgSecondary = Color(hex: "0E0E1A")
-    static let bgTertiary = Color(hex: "141428")
-    static let bgHover = Color(hex: "1A1A35")
-    static let bgActive = Color(hex: "222244")
-
-    // Accents
-    static let accent = Color(hex: "8B5CF6")
-    static let accentHover = Color(hex: "7C3AED")
-    static let accentLight = Color(hex: "8B5CF6").opacity(0.15)
-    static let accentSecondary = Color(hex: "06B6D4")
-
-    // Text
-    static let textPrimary = Color(hex: "F8FAFC")
-    static let textSecondary = Color(hex: "94A3B8")
-    static let textMuted = Color(hex: "475569")
-
-    // Messages
-    static let msgSent = LinearGradient(colors: [Color(hex: "8B5CF6"), Color(hex: "06B6D4")], startPoint: .topLeading, endPoint: .bottomTrailing)
-    static let msgSentColor = Color(hex: "8B5CF6")
-    static let msgReceived = Color.white.opacity(0.06)
-
-    // Status
-    static let success = Color(hex: "10B981")
-    static let danger = Color(hex: "F43F5E")
-    static let warning = Color(hex: "F59E0B")
-
-    // Border & Glass
-    static let border = Color.white.opacity(0.08)
-    static let glassBorder = Color.white.opacity(0.12)
-
-    // Radius
-    static let radius: CGFloat = 16
-    static let radiusSm: CGFloat = 10
-
-    // Gradients
+    static let bgPrimary = Color(hex: "0F0F1A")
+    static let bgSecondary = Color(hex: "1A1A2E")
+    static let bgTertiary = Color(hex: "16213E")
+    static let bgHover = Color(hex: "1F2544")
+    static let bgActive = Color(hex: "2A2D5E")
+    
+    static let accent = Color(hex: "6C63FF")
+    static let accentHover = Color(hex: "5A52E0")
+    static let accentLight = Color(hex: "6C63FF").opacity(0.15)
+    static let accentSecondary = Color(hex: "FF6584")
+    
     static let gradientAccent = LinearGradient(
-        colors: [Color(hex: "8B5CF6"), Color(hex: "06B6D4")],
+        colors: [Color(hex: "6C63FF"), Color(hex: "FF6584")],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
-
-    static let gradientBg = LinearGradient(
-        colors: [Color(hex: "08080F"), Color(hex: "0E0E1A"), Color(hex: "141428")],
-        startPoint: .top,
-        endPoint: .bottom
-    )
-
-    static let gradientNeon = LinearGradient(
-        colors: [Color(hex: "8B5CF6"), Color(hex: "EC4899"), Color(hex: "06B6D4")],
-        startPoint: .topLeading,
-        endPoint: .bottomTrailing
-    )
+    
+    static let textPrimary = Color(hex: "EAEAEA")
+    static let textSecondary = Color(hex: "8B8CA0")
+    static let textMuted = Color(hex: "555670")
+    
+    static let msgSent = Color(hex: "6C63FF")
+    static let msgReceived = Color(hex: "1F2544")
+    
+    static let success = Color(hex: "43AA8B")
+    static let danger = Color(hex: "F94144")
+    
+    static let border = Color.white.opacity(0.06)
+    
+    static let radius: CGFloat = 12
+    static let radiusSm: CGFloat = 8
 }
-
-// MARK: - View Modifiers
-
-extension View {
-    func glassCard(cornerRadius: CGFloat = 16) -> some View {
-        self
-            .background(.ultraThinMaterial)
-            .cornerRadius(cornerRadius)
-            .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius)
-                    .stroke(Theme.glassBorder, lineWidth: 1)
-            )
-    }
-
-    func neonGlow(_ color: Color = Theme.accent, radius: CGFloat = 12) -> some View {
-        self.shadow(color: color.opacity(0.5), radius: radius)
-    }
-
-    func glassBackground() -> some View {
-        self.background(
-            ZStack {
-                Theme.bgPrimary
-                Color.white.opacity(0.03)
-            }
-        )
-    }
-}
-
-// MARK: - Color Hex Init
 
 extension Color {
     init(hex: String) {
@@ -109,5 +57,13 @@ extension Color {
             blue: Double(b) / 255,
             opacity: Double(a) / 255
         )
+    }
+}
+
+extension View {
+    func neonGlow(_ color: Color, radius: CGFloat = 8) -> some View {
+        self
+            .shadow(color: color.opacity(0.5), radius: radius / 2)
+            .shadow(color: color.opacity(0.25), radius: radius)
     }
 }

@@ -4,28 +4,28 @@ import Combine
 struct ChatView: View {
     let conversation: Conversation
     let onStartCall: (String, String, String) -> Void
-
+    
     @EnvironmentObject var authService: AuthService
     @EnvironmentObject var socketService: SocketService
     @StateObject private var vm: ChatViewModel
     @StateObject private var keyboard = KeyboardObserver()
     @FocusState private var inputFocused: Bool
-
+    
     init(conversation: Conversation, onStartCall: @escaping (String, String, String) -> Void) {
         self.conversation = conversation
         self.onStartCall = onStartCall
         _vm = StateObject(wrappedValue: ChatViewModel(conversation: conversation))
     }
-
+    
     var body: some View {
         GeometryReader { geo in
             VStack(spacing: 0) {
                 messageList(in: geo)
-
+                
                 if vm.isTyping {
                     typingIndicator
                 }
-
+                
                 ChatInputView(vm: vm, inputFocused: $inputFocused)
             }
         }
@@ -42,7 +42,7 @@ struct ChatView: View {
                     }
                 } label: {
                     Image(systemName: "video.fill")
-                        .foregroundStyle(Theme.gradientAccent)
+                        .foregroundColor(Theme.accent)
                 }
             }
         }
@@ -51,7 +51,7 @@ struct ChatView: View {
             await vm.loadMessages()
         }
     }
-
+    
     private func messageList(in geo: GeometryProxy) -> some View {
         ScrollViewReader { proxy in
             ScrollView {
@@ -65,10 +65,6 @@ struct ChatView: View {
                             onDelete: { Task { await vm.deleteMessage(message) } }
                         )
                         .id(message.id)
-                        .transition(.asymmetric(
-                            insertion: .move(edge: .bottom).combined(with: .opacity),
-                            removal: .opacity
-                        ))
                     }
                 }
                 .padding(.horizontal, 12)
@@ -93,18 +89,18 @@ struct ChatView: View {
             }
         }
     }
-
+    
     private func scrollToBottom(_ proxy: ScrollViewProxy) {
         guard let last = vm.messages.last else { return }
         withAnimation(.easeOut(duration: 0.2)) {
             proxy.scrollTo(last.id, anchor: .bottom)
         }
     }
-
+    
     private var typingIndicator: some View {
         HStack(spacing: 6) {
             Text("\(conversation.participant?.displayName ?? "") печатает")
-                .font(.system(.caption, design: .rounded))
+                .font(.caption)
                 .foregroundColor(Theme.textSecondary)
             ProgressView().scaleEffect(0.6)
         }
@@ -113,18 +109,18 @@ struct ChatView: View {
         .padding(.vertical, 4)
         .background(Theme.bgPrimary)
     }
-
+    
     private var chatToolbarTitle: some View {
         HStack(spacing: 8) {
             AvatarView(
                 name: conversation.participant?.displayName ?? "?",
-                color: conversation.participant?.avatarColor ?? "#8B5CF6",
+                color: conversation.participant?.avatarColor ?? "#6C63FF",
                 size: 32,
                 showOnline: conversation.participant?.isOnline ?? false
             )
             VStack(alignment: .leading, spacing: 1) {
                 Text(conversation.participant?.displayName ?? "Чат")
-                    .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                    .font(.subheadline.weight(.semibold))
                     .foregroundColor(Theme.textPrimary)
                 Text(conversation.participant?.isOnline == true ? "в сети" : "не в сети")
                     .font(.caption2)
@@ -137,9 +133,9 @@ struct ChatView: View {
 final class KeyboardObserver: ObservableObject {
     @Published var isVisible = false
     @Published var height: CGFloat = 0
-
+    
     private var cancellables = Set<AnyCancellable>()
-
+    
     init() {
         NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)
             .compactMap { $0.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect }
@@ -149,7 +145,7 @@ final class KeyboardObserver: ObservableObject {
                 self?.isVisible = true
             }
             .store(in: &cancellables)
-
+        
         NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in

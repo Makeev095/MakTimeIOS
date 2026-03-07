@@ -23,10 +23,7 @@ struct Story: Codable, Identifiable, Equatable {
     
     var fullFileUrl: String {
         if fileUrl.hasPrefix("http") { return fileUrl }
-        if fileUrl.hasPrefix("/") {
-            return "\(AppConfig.baseURL)\(fileUrl)"
-        }
-        return "\(AppConfig.baseURL)/\(fileUrl)"
+        return "\(AppConfig.baseURL)\(fileUrl)"
     }
 }
 
