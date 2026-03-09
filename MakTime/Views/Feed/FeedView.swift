@@ -170,31 +170,28 @@ struct FeedView: View {
     }
 
     private var postsList: some View {
-        GeometryReader { geo in
-            let postHeight = geo.size.height
-            ScrollView {
-                LazyVStack(spacing: 0) {
-                    ForEach(vm.posts) { post in
-                        PostCardView(
-                            post: post,
-                            isMine: post.authorId == authService.user?.id,
-                            feedSound: feedSound,
-                            onLike: { vm.toggleLike(post: post) },
-                            onComment: { selectedPostForComments = post },
-                            onRepost: { vm.repost(post: post) },
-                            onDelete: { vm.deletePost(post) },
-                            onVideoTap: post.type == .video ? {
-                                reelsStartIndex = videoPosts.firstIndex(where: { $0.id == post.id }) ?? 0
-                                showReels = true
-                            } : nil,
-                            onSave: { MediaSaver.save(urlString: post.fullFileUrl, isVideo: post.type == .video) }
-                        )
-                        .frame(height: postHeight)
-                        .padding(.horizontal, 12)
-                    }
+        ScrollView {
+            LazyVStack(spacing: 12) {
+                ForEach(vm.posts) { post in
+                    PostCardView(
+                        post: post,
+                        isMine: post.authorId == authService.user?.id,
+                        feedSound: feedSound,
+                        onLike: { vm.toggleLike(post: post) },
+                        onComment: { selectedPostForComments = post },
+                        onRepost: { vm.repost(post: post) },
+                        onDelete: { vm.deletePost(post) },
+                        onVideoTap: post.type == .video ? {
+                            reelsStartIndex = videoPosts.firstIndex(where: { $0.id == post.id }) ?? 0
+                            showReels = true
+                        } : nil,
+                        onSave: { MediaSaver.save(urlString: post.fullFileUrl, isVideo: post.type == .video) }
+                    )
+                    .padding(.horizontal, 12)
                 }
             }
-            .refreshable { await vm.refreshPosts() }
+            .padding(.vertical, 12)
         }
+        .refreshable { await vm.refreshPosts() }
     }
 }
