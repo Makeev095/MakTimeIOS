@@ -9,7 +9,6 @@ class VideoCallViewModel: ObservableObject {
     @Published var status: CallStatus = .connecting
     @Published var isMuted = false
     @Published var isVideoOff = false
-    @Published var isSpeakerOn = true
     @Published var duration: Int = 0
     @Published var remoteVideoTrack: RTCVideoTrack?
     
@@ -224,11 +223,6 @@ class VideoCallViewModel: ObservableObject {
     
     func switchCamera() {
         webRTCService.switchCamera()
-    }
-
-    func toggleSpeaker() {
-        isSpeakerOn.toggle()
-        configureAudioSession(speaker: isSpeakerOn)
     }
 
     private func configureAudioSession(speaker: Bool) {

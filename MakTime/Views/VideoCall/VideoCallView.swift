@@ -167,21 +167,6 @@ struct VideoCallView: View {
 
                     Spacer()
 
-                    // Speaker
-                    Button {
-                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                        vm.toggleSpeaker()
-                    } label: {
-                        Image(systemName: vm.isSpeakerOn ? "speaker.wave.2.fill" : "speaker.fill")
-                            .font(.system(size: 13))
-                            .foregroundColor(.white)
-                            .frame(width: 34, height: 34)
-                            .background(.black.opacity(0.55))
-                            .clipShape(Circle())
-                    }
-
-                    Spacer()
-
                     // Expand
                     Button(action: onToggleMinimize) {
                         Image(systemName: "arrow.up.left.and.arrow.down.right")
@@ -304,8 +289,6 @@ struct VideoCallView: View {
                                    isActive: vm.isMuted) { vm.toggleMute() }
                         callButton(icon: vm.isVideoOff ? "video.slash.fill" : "video.fill",
                                    isActive: vm.isVideoOff) { vm.toggleVideo() }
-                        callButton(icon: vm.isSpeakerOn ? "speaker.wave.2.fill" : "speaker.fill",
-                                   isActive: !vm.isSpeakerOn) { vm.toggleSpeaker() }
                         callButton(icon: "arrow.triangle.2.circlepath.camera", isActive: false) { vm.switchCamera() }
 
                         Button(action: onToggleMinimize) {
