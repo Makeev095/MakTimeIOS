@@ -52,6 +52,8 @@ struct ChatView: View {
         }
     }
     
+    private static let bottomAnchorId = "chatBottom"
+
     private func messageList(in geo: GeometryProxy) -> some View {
         ScrollViewReader { proxy in
             ScrollView {
@@ -66,6 +68,7 @@ struct ChatView: View {
                         )
                         .id(message.id)
                     }
+                    Color.clear.frame(height: 1).id(Self.bottomAnchorId)
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
@@ -80,24 +83,26 @@ struct ChatView: View {
             }
             .onChange(of: keyboard.isVisible) { visible in
                 if visible {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
                         scrollToBottom(proxy, animated: true)
                     }
                 }
             }
             .onChange(of: vm.isLoading) { loading in
                 if !loading && !vm.messages.isEmpty {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                        scrollToBottom(proxy, animated: false)
-                    }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-                        scrollToBottom(proxy, animated: false)
+                    for delay in [0.05, 0.2, 0.5] as [Double] {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                            scrollToBottom(proxy, animated: false)
+                        }
                     }
                 }
             }
             .onAppear {
                 if !vm.isLoading && !vm.messages.isEmpty {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                        scrollToBottom(proxy, animated: false)
+                    }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                         scrollToBottom(proxy, animated: false)
                     }
                 }
@@ -106,13 +111,12 @@ struct ChatView: View {
     }
 
     private func scrollToBottom(_ proxy: ScrollViewProxy, animated: Bool) {
-        guard let last = vm.messages.last else { return }
         if animated {
             withAnimation(.easeOut(duration: 0.2)) {
-                proxy.scrollTo(last.id, anchor: .bottom)
+                proxy.scrollTo(Self.bottomAnchorId, anchor: .bottom)
             }
         } else {
-            proxy.scrollTo(last.id, anchor: .bottom)
+            proxy.scrollTo(Self.bottomAnchorId, anchor: .bottom)
         }
     }
     

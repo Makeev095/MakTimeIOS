@@ -66,6 +66,16 @@ class FeedViewModel: ObservableObject {
             do {
                 try await APIService.shared.deletePost(postId: post.id)
                 posts.removeAll { $0.id == post.id }
+            } catch let err as APIError {
+                switch err {
+                case .httpError(404, _):
+                    deleteError = "Пост не найден или уже удалён"
+                case .httpError(403, _):
+                    deleteError = "Нет прав на удаление"
+                default:
+                    deleteError = err.localizedDescription
+                }
+                print("Delete post error: \(err)")
             } catch {
                 deleteError = "Не удалось удалить пост"
                 print("Delete post error: \(error)")
@@ -110,10 +120,23 @@ class FeedViewModel: ObservableObject {
             )
             posts.insert(newPost, at: 0)
             return nil
+        } catch let err as APIError {
+            let msg = friendlyVideoError(err)
+            publishError = msg
+            return msg
         } catch {
             let msg = "Не удалось опубликовать: \(error.localizedDescription)"
             publishError = msg
             return msg
         }
+    }
+
+    private func friendlyVideoError(_ err: APIError) -> String {
+        if case .httpError(_, let body) = err {
+            if body.contains("413") || body.contains("Request Entity Too Large") || body.contains("Too Large") || body.contains("<") {
+                return "Видео слишком большое. Максимум: 1 минута, 500 МБ."
+            }
+        }
+        return "Не удалось опубликовать: \(err.localizedDescription)"
     }
 }

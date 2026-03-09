@@ -3,11 +3,12 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 63;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		009B9C3A33E42E9EC99A871B /* PostCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D144D2B4EAC9C83FF05316E /* PostCardView.swift */; };
+		02699AEB262FD4FF43F1850A /* FeedVideoSoundState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88BBD0667A9AAD857EA820FF /* FeedVideoSoundState.swift */; };
 		05FEF4368009F3A09AA32691 /* StoryUploadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4708322B4AE1549A83F02F47 /* StoryUploadView.swift */; };
 		0670FB7E969AFE9FE101B934 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAAA72A2226D8D5693E74E9B /* MainTabView.swift */; };
 		06C14558FC56D21425E50ED3 /* CachedImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7DA64C87B9D681BEFB54869 /* CachedImage.swift */; };
@@ -88,13 +89,14 @@
 		64A57D954D358C3FA9D7DE8A /* ChatViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewModel.swift; sourceTree = "<group>"; };
 		71B452ED609BFC12F426FE49 /* AvatarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarView.swift; sourceTree = "<group>"; };
 		74906BD696831E62C588D609 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		7C6765289B81975BE1C70FDC /* MakTime.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MakTime.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7C6765289B81975BE1C70FDC /* MakTime.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = MakTime.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7CE3A8969595FF645894EE8F /* WebRTCService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebRTCService.swift; sourceTree = "<group>"; };
 		7D7B214E8FE914DA4758AAA4 /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		80283A7DD81F19446892136D /* CreatePostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreatePostView.swift; sourceTree = "<group>"; };
 		8320DB45EEF02D36AEC12D29 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		866B6EAAC85F0AF433CF1081 /* IncomingCallOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IncomingCallOverlay.swift; sourceTree = "<group>"; };
 		87F79B3B9125AD83F963731A /* Post.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Post.swift; sourceTree = "<group>"; };
+		88BBD0667A9AAD857EA820FF /* FeedVideoSoundState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedVideoSoundState.swift; sourceTree = "<group>"; };
 		966B7B2195382157EB000AD8 /* StoryViewerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoryViewerView.swift; sourceTree = "<group>"; };
 		9B9D4CBC609FD6713DE9BC05 /* StoryBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoryBarView.swift; sourceTree = "<group>"; };
 		A0A212077354E44CD512D6AE /* MakTimeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MakTimeApp.swift; sourceTree = "<group>"; };
@@ -234,6 +236,7 @@
 				64A57D954D358C3FA9D7DE8A /* ChatViewModel.swift */,
 				3CC3E12652B73D5777DA704F /* ContactsViewModel.swift */,
 				DE52531C2C14A5D1171A9D4D /* ConversationsViewModel.swift */,
+				88BBD0667A9AAD857EA820FF /* FeedVideoSoundState.swift */,
 				2ED7D9D1486F892D30D47E34 /* FeedViewModel.swift */,
 				3CAC9EE7F7A348C7A89463A9 /* SettingsViewModel.swift */,
 				5C907CB5690416B2D7FDF8EC /* StoriesViewModel.swift */,
@@ -366,6 +369,11 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					ED777E73F84CDF485267FBFD = {
+						DevelopmentTeam = "";
+					};
+				};
 			};
 			buildConfigurationList = C6F9D3966668A298E02DA8D6 /* Build configuration list for PBXProject "MakTime" */;
 			compatibilityVersion = "Xcode 14.0";
@@ -379,9 +387,10 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				5238C2BF1CCA8688F97831C6 /* XCRemoteSwiftPackageReference "KeychainAccess" */,
-				683A8D5574B1DB3C34554060 /* XCRemoteSwiftPackageReference "socket" */,
+				683A8D5574B1DB3C34554060 /* XCRemoteSwiftPackageReference "socket.io-client-swift" */,
 				09D3011744D975904BF1DEBC /* XCRemoteSwiftPackageReference "WebRTC" */,
 			);
+			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -425,6 +434,7 @@
 				3CDE9F4D289C34E6620D410C /* ConversationListView.swift in Sources */,
 				D7B43FDE7783DB9257D0630B /* ConversationsViewModel.swift in Sources */,
 				333FD8B634361FEBE4C5306F /* CreatePostView.swift in Sources */,
+				02699AEB262FD4FF43F1850A /* FeedVideoSoundState.swift in Sources */,
 				65A8665CFA40810CC04435C2 /* FeedView.swift in Sources */,
 				12FA87AB3AA4EAB2AFB4675F /* FeedViewModel.swift in Sources */,
 				EBE637B4576CE14C8B077866 /* ImageCache.swift in Sources */,
@@ -467,7 +477,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = S35L7N92X8;
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = MakTime/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -544,7 +554,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = S35L7N92X8;
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = MakTime/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -662,7 +672,7 @@
 				minimumVersion = 4.2.2;
 			};
 		};
-		683A8D5574B1DB3C34554060 /* XCRemoteSwiftPackageReference "socket" */ = {
+		683A8D5574B1DB3C34554060 /* XCRemoteSwiftPackageReference "socket.io-client-swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/socketio/socket.io-client-swift";
 			requirement = {
@@ -675,7 +685,7 @@
 /* Begin XCSwiftPackageProductDependency section */
 		1B1F4F4573265C3D4CF9BE71 /* SocketIO */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 683A8D5574B1DB3C34554060 /* XCRemoteSwiftPackageReference "socket" */;
+			package = 683A8D5574B1DB3C34554060 /* XCRemoteSwiftPackageReference "socket.io-client-swift" */;
 			productName = SocketIO;
 		};
 		A299F162096E4D31AAFC8AB7 /* WebRTC */ = {

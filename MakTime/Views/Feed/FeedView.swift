@@ -2,6 +2,7 @@ import SwiftUI
 
 struct FeedView: View {
     @StateObject private var vm = FeedViewModel()
+    @StateObject private var feedSound = FeedVideoSoundState()
     @EnvironmentObject var authService: AuthService
     @State private var showCreatePost = false
     @State private var selectedPostForComments: Post?
@@ -175,6 +176,7 @@ struct FeedView: View {
                     PostCardView(
                         post: post,
                         isMine: post.authorId == authService.user?.id,
+                        feedSound: feedSound,
                         onLike: { vm.toggleLike(post: post) },
                         onComment: { selectedPostForComments = post },
                         onRepost: { vm.repost(post: post) },

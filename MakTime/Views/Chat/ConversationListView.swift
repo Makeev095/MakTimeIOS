@@ -39,8 +39,15 @@ struct ConversationListView: View {
                     .listRowSeparator(.hidden)
                     .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                         Button(role: .destructive) {
-                            withAnimation {
-                                vm.conversations.removeAll { $0.id == conv.id }
+                            Task {
+                                do {
+                                    try await APIService.shared.deleteConversation(conversationId: conv.id)
+                                    withAnimation {
+                                        vm.conversations.removeAll { $0.id == conv.id }
+                                    }
+                                } catch {
+                                    print("Delete conversation error: \(error)")
+                                }
                             }
                         } label: {
                             Label("Удалить", systemImage: "trash")

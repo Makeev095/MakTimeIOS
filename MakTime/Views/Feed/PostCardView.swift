@@ -4,6 +4,7 @@ import AVFoundation
 struct PostCardView: View {
     let post: Post
     let isMine: Bool
+    @ObservedObject var feedSound: FeedVideoSoundState
     let onLike: () -> Void
     let onComment: () -> Void
     let onRepost: () -> Void
@@ -72,7 +73,7 @@ struct PostCardView: View {
         ZStack {
             Group {
                 if post.type == .video {
-                    InlineFeedVideoPlayer(url: URL(string: post.fullFileUrl))
+                    InlineFeedVideoPlayer(url: URL(string: post.fullFileUrl), feedSound: feedSound)
                         .aspectRatio(1, contentMode: .fill)
                         .frame(maxWidth: .infinity)
                         .frame(minHeight: 280)
@@ -205,6 +206,7 @@ struct PostCardView: View {
 
 struct InlineFeedVideoPlayer: View {
     let url: URL?
+    @ObservedObject var feedSound: FeedVideoSoundState
     @StateObject private var vm = InlineFeedVideoVM()
 
     var body: some View {
@@ -218,7 +220,7 @@ struct InlineFeedVideoPlayer: View {
             // Mute button
             Button {
                 UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                vm.toggleMute()
+                vm.toggleMute(feedSound: feedSound)
             } label: {
                 Image(systemName: vm.isMuted ? "speaker.slash.fill" : "speaker.wave.2.fill")
                     .font(.system(size: 12, weight: .semibold))
@@ -245,6 +247,7 @@ struct InlineFeedVideoPlayer: View {
         }
         .onAppear {
             if let url = url { vm.load(url: url) }
+            vm.applyMuteFrom(feedSound: feedSound)
             vm.play()
         }
         .onDisappear {
@@ -322,8 +325,14 @@ private final class InlineFeedVideoVM: ObservableObject {
         }
     }
 
-    func toggleMute() {
+    func toggleMute(feedSound: FeedVideoSoundState) {
         isMuted.toggle()
+        feedSound.soundOn = !isMuted
+        player?.isMuted = isMuted
+    }
+
+    func applyMuteFrom(feedSound: FeedVideoSoundState) {
+        isMuted = !feedSound.soundOn
         player?.isMuted = isMuted
     }
 

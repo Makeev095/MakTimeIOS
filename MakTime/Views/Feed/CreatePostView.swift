@@ -1,6 +1,7 @@
 import SwiftUI
 import PhotosUI
 import AVFoundation
+import CoreMedia
 import UniformTypeIdentifiers
 
 struct CreatePostView: View {
@@ -143,6 +144,9 @@ struct CreatePostView: View {
         isVideo = false
     }
 
+    private static let maxVideoDuration: TimeInterval = 60
+    private static let maxVideoSizeMB = 500
+
     private func loadSelectedMedia() async {
         guard let item = selectedItem else { return }
 
@@ -155,11 +159,22 @@ struct CreatePostView: View {
         if isVideoItem {
             // Load video
             if let movie = try? await item.loadTransferable(type: VideoTransferable.self) {
+                let duration = await getVideoDuration(url: movie.url)
+                if duration > Self.maxVideoDuration {
+                    errorMessage = "Максимальная длительность видео — 1 минута. Выберите более короткое видео."
+                    selectedItem = nil
+                    return
+                }
                 let data = try? Data(contentsOf: movie.url)
+                if let data = data, data.count > Self.maxVideoSizeMB * 1024 * 1024 {
+                    errorMessage = "Максимальный размер видео — \(Self.maxVideoSizeMB) МБ, длительность — 1 минута."
+                    selectedItem = nil
+                    return
+                }
                 selectedVideoData = data
                 selectedImageData = nil
                 isVideo = true
-                // Generate thumbnail from video
+                errorMessage = nil
                 previewImage = generateVideoThumbnail(url: movie.url)
             }
         } else {
@@ -170,6 +185,16 @@ struct CreatePostView: View {
                 isVideo = false
                 previewImage = UIImage(data: data)
             }
+        }
+    }
+
+    private func getVideoDuration(url: URL) async -> TimeInterval {
+        let asset = AVAsset(url: url)
+        do {
+            let duration = try await asset.load(.duration)
+            return CMTimeGetSeconds(duration)
+        } catch {
+            return 0
         }
     }
 

@@ -100,6 +100,10 @@ actor APIService {
     func getMessages(conversationId: String) async throws -> [Message] {
         return try await get("/conversations/\(conversationId)/messages")
     }
+
+    func deleteConversation(conversationId: String) async throws {
+        let _: EmptyResponse = try await request("DELETE", path: "/conversations/\(conversationId)")
+    }
     
     func deleteMessage(messageId: String) async throws {
         let _: EmptyResponse = try await request("DELETE", path: "/messages/\(messageId)")
