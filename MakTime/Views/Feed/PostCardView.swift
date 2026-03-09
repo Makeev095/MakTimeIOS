@@ -151,17 +151,17 @@ struct PostCardView: View {
             if !post.caption.isEmpty || post.commentsCount > 0 {
                 VStack(alignment: .leading, spacing: 4) {
                     if !post.caption.isEmpty {
-                        Group {
+                        (
                             Text(post.authorName)
                                 .font(.system(.subheadline, design: .rounded).weight(.semibold))
                             + Text(" ")
                             + Text(post.caption)
                                 .font(.system(.subheadline, design: .rounded))
-                        }
+                        )
+                        .foregroundColor(.white)
+                        .lineLimit(2)
+                        .shadow(color: .black.opacity(0.5), radius: 2)
                     }
-                    .foregroundColor(.white)
-                    .lineLimit(2)
-                    .shadow(color: .black.opacity(0.5), radius: 2)
                     if post.commentsCount > 0 {
                         Button(action: onComment) {
                             Text("Посмотреть все комментарии (\(post.commentsCount))")
