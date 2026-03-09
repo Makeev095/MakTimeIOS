@@ -9,6 +9,7 @@ class FeedViewModel: ObservableObject {
     @Published var isRefreshing = false
     @Published var loadError: String?
     @Published var publishError: String?
+    @Published var deleteError: String?
 
     func loadPosts() async {
         isLoading = true
@@ -60,11 +61,13 @@ class FeedViewModel: ObservableObject {
     }
 
     func deletePost(_ post: Post) {
+        deleteError = nil
         Task {
             do {
                 try await APIService.shared.deletePost(postId: post.id)
                 posts.removeAll { $0.id == post.id }
             } catch {
+                deleteError = "Не удалось удалить пост"
                 print("Delete post error: \(error)")
             }
         }

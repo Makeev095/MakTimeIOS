@@ -51,8 +51,9 @@ actor APIService {
         return try await get("/auth/me")
     }
     
-    func updateProfile(displayName: String, bio: String) async throws -> User {
-        let body: [String: Any] = ["displayName": displayName, "bio": bio]
+    func updateProfile(displayName: String, bio: String, avatarUrl: String? = nil) async throws -> User {
+        var body: [String: Any] = ["displayName": displayName, "bio": bio]
+        if let url = avatarUrl { body["avatarUrl"] = url }
         return try await put("/auth/profile", body: body)
     }
     

@@ -70,6 +70,7 @@ struct ChatView: View {
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
             }
+            .scrollIndicators(.hidden)
             .scrollDismissesKeyboard(.interactively)
             .onTapGesture {
                 inputFocused = false
@@ -79,14 +80,24 @@ struct ChatView: View {
             }
             .onChange(of: keyboard.isVisible) { visible in
                 if visible {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                         scrollToBottom(proxy, animated: true)
                     }
                 }
             }
             .onChange(of: vm.isLoading) { loading in
                 if !loading && !vm.messages.isEmpty {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        scrollToBottom(proxy, animated: false)
+                    }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                        scrollToBottom(proxy, animated: false)
+                    }
+                }
+            }
+            .onAppear {
+                if !vm.isLoading && !vm.messages.isEmpty {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                         scrollToBottom(proxy, animated: false)
                     }
                 }
@@ -123,6 +134,7 @@ struct ChatView: View {
             AvatarView(
                 name: conversation.participant?.displayName ?? "?",
                 color: conversation.participant?.avatarColor ?? "#6C63FF",
+                avatarUrl: conversation.participant?.avatarUrl,
                 size: 32,
                 showOnline: conversation.participant?.isOnline ?? false
             )

@@ -38,6 +38,7 @@ struct StoryUser: Codable, Identifiable, Equatable {
     let username: String
     let displayName: String
     let avatarColor: String
+    var avatarUrl: String?
     let storyCount: Int
     let hasUnviewed: Bool
     let isOwn: Bool
@@ -48,6 +49,7 @@ struct StoryUser: Codable, Identifiable, Equatable {
         case userId = "userId"
         case displayName = "displayName"
         case avatarColor = "avatarColor"
+        case avatarUrl = "avatarUrl"
         case storyCount = "storyCount"
         case hasUnviewed = "hasUnviewed"
         case isOwn = "isOwn"
@@ -60,11 +62,13 @@ struct StoryViewer: Codable, Identifiable {
     let viewerId: String
     let displayName: String
     let avatarColor: String?
+    var avatarUrl: String?
     let viewedAt: String
     
     enum CodingKeys: String, CodingKey {
         case displayName = "displayName"
         case avatarColor = "avatarColor"
+        case avatarUrl = "avatarUrl"
         case viewedAt = "viewedAt"
         case viewerId = "userId"
     }

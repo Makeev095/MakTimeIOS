@@ -68,9 +68,9 @@ class AuthService: ObservableObject {
         isLoading = false
     }
     
-    func updateProfile(displayName: String, bio: String) async {
+    func updateProfile(displayName: String, bio: String, avatarUrl: String? = nil) async {
         do {
-            let updated = try await APIService.shared.updateProfile(displayName: displayName, bio: bio)
+            let updated = try await APIService.shared.updateProfile(displayName: displayName, bio: bio, avatarUrl: avatarUrl)
             self.user = updated
         } catch {}
     }

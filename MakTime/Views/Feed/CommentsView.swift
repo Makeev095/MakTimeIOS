@@ -35,6 +35,7 @@ struct CommentsView: View {
                         }
                         .padding(16)
                     }
+                    .scrollIndicators(.hidden)
                 }
 
                 Divider().background(Theme.border)

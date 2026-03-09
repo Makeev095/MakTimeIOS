@@ -3,41 +3,54 @@ import SwiftUI
 struct AvatarView: View {
     let name: String
     let color: String
+    var avatarUrl: String? = nil
     var size: CGFloat = 44
     var showOnline: Bool = false
-
+    
+    private var fullUrl: String? {
+        guard let url = avatarUrl, !url.isEmpty else { return nil }
+        if url.hasPrefix("http") { return url }
+        return "\(AppConfig.baseURL)\(url)"
+    }
+    
     var body: some View {
         ZStack {
-            Circle()
-                .fill(
-                    LinearGradient(
-                        colors: [Color(hex: color), Color(hex: color).opacity(0.7)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .frame(width: size, height: size)
-
-            Text(initials)
-                .font(.system(size: size * 0.38, weight: .bold, design: .rounded))
-                .foregroundColor(.white)
+            if let url = fullUrl, let u = URL(string: url) {
+                CachedImage(url: u) { img in
+                    img.resizable()
+                        .scaledToFill()
+                        .frame(width: size, height: size)
+                        .clipped()
+                } placeholder: {
+                    fallbackView
+                }
+            } else {
+                fallbackView
+            }
         }
-        .overlay(
-            Circle()
-                .stroke(Theme.glassBorder, lineWidth: 1)
-        )
+        .clipShape(Circle())
         .overlay(alignment: .bottomTrailing) {
             if showOnline {
                 Circle()
                     .fill(Theme.success)
-                    .frame(width: size * 0.28, height: size * 0.28)
+                    .frame(width: size * 0.3, height: size * 0.3)
                     .overlay(Circle().stroke(Theme.bgPrimary, lineWidth: 2))
-                    .shadow(color: Theme.success.opacity(0.6), radius: 4)
                     .offset(x: 2, y: 2)
             }
         }
     }
-
+    
+    private var fallbackView: some View {
+        ZStack {
+            Circle()
+                .fill(Color(hex: color))
+                .frame(width: size, height: size)
+            Text(initials)
+                .font(.system(size: size * 0.38, weight: .semibold))
+                .foregroundColor(.white)
+        }
+    }
+    
     private var initials: String {
         let parts = name.split(separator: " ")
         if parts.count >= 2 {

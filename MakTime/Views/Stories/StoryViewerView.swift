@@ -85,7 +85,7 @@ struct StoryViewerView: View {
 
                         // Header
                         HStack(spacing: 10) {
-                            AvatarView(name: user.displayName, color: user.avatarColor, size: 36)
+                            AvatarView(name: user.displayName, color: user.avatarColor, avatarUrl: user.avatarUrl, size: 36)
                             VStack(alignment: .leading, spacing: 1) {
                                 Text(user.displayName)
                                     .font(.subheadline.weight(.semibold))
@@ -272,7 +272,8 @@ struct StoryViewerView: View {
                     List(viewers) { viewer in
                         HStack(spacing: 10) {
                             AvatarView(name: viewer.displayName,
-                                       color: viewer.avatarColor ?? "#6C63FF", size: 36)
+                                       color: viewer.avatarColor ?? "#6C63FF",
+                                       avatarUrl: viewer.avatarUrl, size: 36)
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(viewer.displayName).foregroundColor(Theme.textPrimary)
                                 Text(formatDate(viewer.viewedAt))

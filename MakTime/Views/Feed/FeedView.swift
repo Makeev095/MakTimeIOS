@@ -64,11 +64,21 @@ struct FeedView: View {
             }
         }
         .task { await vm.loadPosts() }
+        .alert("Ошибка удаления", isPresented: Binding(
+            get: { vm.deleteError != nil },
+            set: { if !$0 { vm.deleteError = nil } }
+        )) {
+            Button("OK", role: .cancel) { vm.deleteError = nil }
+        } message: {
+            if let err = vm.deleteError { Text(err) }
+        }
         .sheet(isPresented: $showCreatePost) {
             CreatePostView(vm: vm, onClose: { showCreatePost = false })
         }
         .sheet(item: $selectedPostForComments) { post in
             CommentsView(post: post)
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
         }
         .fullScreenCover(isPresented: $showReels) {
             ReelsView(

@@ -1,20 +1,46 @@
 import SwiftUI
+import PhotosUI
 
 struct SettingsView: View {
     @EnvironmentObject var authService: AuthService
     @StateObject private var vm = SettingsViewModel()
     @State private var showLogoutConfirm = false
+    @State private var selectedAvatarItem: PhotosPickerItem?
+    @State private var isUploadingAvatar = false
+
+    private var effectiveAvatarUrl: String? {
+        vm.avatarUrl ?? authService.user?.avatarUrl
+    }
 
     var body: some View {
         ZStack {
             Theme.bgPrimary.ignoresSafeArea()
 
             List {
-                // MARK: — Profile header (non-interactive)
+                // MARK: — Profile header with avatar picker
                 Section {
                     HStack(spacing: 16) {
                         if let user = authService.user {
-                            AvatarView(name: user.displayName, color: user.avatarColor, size: 56)
+                            PhotosPicker(selection: $selectedAvatarItem, matching: .images) {
+                                ZStack(alignment: .bottomTrailing) {
+                                    AvatarView(name: user.displayName, color: user.avatarColor, avatarUrl: effectiveAvatarUrl, size: 56)
+                                    if isUploadingAvatar {
+                                        ProgressView().tint(.white)
+                                            .frame(width: 24, height: 24)
+                                            .background(Circle().fill(.black.opacity(0.5)))
+                                    } else {
+                                        Image(systemName: "camera.fill")
+                                            .font(.system(size: 12))
+                                            .foregroundColor(.white)
+                                            .frame(width: 24, height: 24)
+                                            .background(Circle().fill(Theme.accent))
+                                    }
+                                }
+                            }
+                            .disabled(isUploadingAvatar)
+                            .onChange(of: selectedAvatarItem) { _ in
+                                Task { await uploadSelectedAvatar() }
+                            }
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(user.displayName)
                                     .font(.headline)
@@ -22,6 +48,9 @@ struct SettingsView: View {
                                 Text("@\(user.username)")
                                     .font(.subheadline)
                                     .foregroundColor(Theme.textSecondary)
+                                Text("Нажмите на аватар, чтобы изменить")
+                                    .font(.caption2)
+                                    .foregroundColor(Theme.textMuted)
                             }
                         }
                     }
@@ -88,6 +117,25 @@ struct SettingsView: View {
             Button("Отмена", role: .cancel) {}
         }
         .onAppear { vm.load(from: authService.user) }
+    }
+
+    private func uploadSelectedAvatar() async {
+        guard let item = selectedAvatarItem else { return }
+        selectedAvatarItem = nil
+        isUploadingAvatar = true
+        defer { isUploadingAvatar = false }
+        guard let data = try? await item.loadTransferable(type: Data.self) else { return }
+        do {
+            let resp = try await APIService.shared.uploadFile(
+                data: data,
+                filename: "avatar_\(UUID().uuidString).jpg",
+                mimeType: "image/jpeg"
+            )
+            vm.setAvatarUrl(resp.fileUrl)
+            await authService.updateProfile(displayName: vm.displayName, bio: vm.bio, avatarUrl: resp.fileUrl)
+        } catch {
+            print("Avatar upload error: \(error)")
+        }
     }
 
     // MARK: - Helpers

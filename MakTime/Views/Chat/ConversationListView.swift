@@ -74,6 +74,7 @@ struct ConversationListView: View {
                 AvatarView(
                     name: conv.participant?.displayName ?? "?",
                     color: conv.participant?.avatarColor ?? "#6C63FF",
+                    avatarUrl: conv.participant?.avatarUrl,
                     size: 52,
                     showOnline: vm.isUserOnline(conv.participant?.id ?? "")
                 )
