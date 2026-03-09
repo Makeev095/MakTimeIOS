@@ -8,7 +8,6 @@ struct FeedView: View {
     @State private var selectedPostForComments: Post?
     @State private var showReels = false
     @State private var reelsStartIndex = 0
-    @State private var feedCurrentIndex = 0
 
     /// Only video posts, used for Reels
     private var videoPosts: [Post] { vm.posts.filter { $0.type == .video } }
@@ -172,33 +171,29 @@ struct FeedView: View {
 
     private var postsList: some View {
         GeometryReader { geo in
-            let h = geo.size.height
-            let w = geo.size.width
-            TabView(selection: $feedCurrentIndex) {
-                ForEach(Array(vm.posts.enumerated()), id: \.element.id) { idx, post in
-                    PostCardView(
-                        post: post,
-                        isMine: post.authorId == authService.user?.id,
-                        feedSound: feedSound,
-                        onLike: { vm.toggleLike(post: post) },
-                        onComment: { selectedPostForComments = post },
-                        onRepost: { vm.repost(post: post) },
-                        onDelete: { vm.deletePost(post) },
-                        onVideoTap: post.type == .video ? {
-                            reelsStartIndex = videoPosts.firstIndex(where: { $0.id == post.id }) ?? 0
-                            showReels = true
-                        } : nil,
-                        onSave: { MediaSaver.save(urlString: post.fullFileUrl, isVideo: post.type == .video) }
-                    )
-                    .frame(width: h, height: w)
-                    .tag(idx)
-                    .rotationEffect(.degrees(-90))
+            let postHeight = geo.size.height
+            ScrollView {
+                LazyVStack(spacing: 0) {
+                    ForEach(vm.posts) { post in
+                        PostCardView(
+                            post: post,
+                            isMine: post.authorId == authService.user?.id,
+                            feedSound: feedSound,
+                            onLike: { vm.toggleLike(post: post) },
+                            onComment: { selectedPostForComments = post },
+                            onRepost: { vm.repost(post: post) },
+                            onDelete: { vm.deletePost(post) },
+                            onVideoTap: post.type == .video ? {
+                                reelsStartIndex = videoPosts.firstIndex(where: { $0.id == post.id }) ?? 0
+                                showReels = true
+                            } : nil,
+                            onSave: { MediaSaver.save(urlString: post.fullFileUrl, isVideo: post.type == .video) }
+                        )
+                        .frame(height: postHeight)
+                        .padding(.horizontal, 12)
+                    }
                 }
             }
-            .frame(width: w, height: h)
-            .tabViewStyle(.page(indexDisplayMode: .never))
-            .rotationEffect(.degrees(90))
-            .padding(.horizontal, 12)
             .refreshable { await vm.refreshPosts() }
         }
     }

@@ -16,20 +16,84 @@ struct PostCardView: View {
     @State private var heartScale: CGFloat = 0
 
     var body: some View {
-        ZStack(alignment: .top) {
-            // Media fills entire card
-            mediaBackground
+        VStack(alignment: .leading, spacing: 0) {
+            header
+            mediaSection
+            actionBar
+            captionSection
+        }
+        .background(Theme.bgCard)
+        .clipShape(RoundedRectangle(cornerRadius: Theme.radiusLg))
+        .overlay(
+            RoundedRectangle(cornerRadius: Theme.radiusLg)
+                .stroke(Theme.glassBorder, lineWidth: 1)
+        )
+        .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 4)
+    }
 
-            // Top overlay: header (always visible)
-            VStack {
-                headerOverlay
-                Spacer(minLength: 0)
-                // Bottom overlay: actions + caption
-                bottomOverlay
+    // MARK: - Header
+    private var header: some View {
+        HStack(spacing: 10) {
+            AvatarView(name: post.authorName, color: post.authorAvatarColor, size: 38)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(post.authorName)
+                    .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                    .foregroundColor(Theme.textPrimary)
+                Text(post.timeAgo)
+                    .font(.caption2)
+                    .foregroundColor(Theme.textMuted)
             }
-            .padding(.horizontal, 12)
-            .padding(.top, 12)
-            .padding(.bottom, 16)
+            Spacer()
+            Menu {
+                if let onSave = onSave {
+                    Button { onSave() } label: {
+                        Label("Сохранить", systemImage: "square.and.arrow.down")
+                    }
+                }
+                if isMine {
+                    Button(role: .destructive, action: onDelete) {
+                        Label("Удалить", systemImage: "trash")
+                    }
+                }
+            } label: {
+                Image(systemName: "ellipsis")
+                    .foregroundColor(Theme.textSecondary)
+                    .padding(10)
+                    .background(Theme.bgHover)
+                    .clipShape(Circle())
+            }
+        }
+        .padding(.horizontal, 14)
+        .padding(.top, 14)
+        .padding(.bottom, 10)
+    }
+
+    // MARK: - Media
+    private var mediaSection: some View {
+        ZStack {
+            Group {
+                if post.type == .video {
+                    InlineFeedVideoPlayer(url: URL(string: post.fullFileUrl), feedSound: feedSound)
+                        .aspectRatio(1, contentMode: .fill)
+                        .frame(maxWidth: .infinity)
+                        .frame(minHeight: 280)
+                        .clipped()
+                } else if let url = URL(string: post.fullFileUrl) {
+                    CachedImage(url: url) { img in
+                        img.resizable()
+                            .scaledToFill()
+                            .frame(maxWidth: .infinity)
+                            .frame(minHeight: 280)
+                            .clipped()
+                    } placeholder: {
+                        ShimmerBox()
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 280)
+                    }
+                }
+            }
+            .clipShape(RoundedRectangle(cornerRadius: Theme.radius))
+            .padding(.horizontal, 10)
 
             if showDoubleTapHeart {
                 Image(systemName: "heart.fill")
@@ -37,13 +101,10 @@ struct PostCardView: View {
                     .foregroundStyle(Theme.gradientAccent)
                     .shadow(color: Theme.accent.opacity(0.7), radius: 14)
                     .scaleEffect(heartScale)
+                    .opacity(showDoubleTapHeart ? 1 : 0)
                     .transition(.opacity)
             }
         }
-        .background(Theme.bgCard)
-        .clipShape(RoundedRectangle(cornerRadius: Theme.radiusLg))
-        .overlay(RoundedRectangle(cornerRadius: Theme.radiusLg).stroke(Theme.glassBorder, lineWidth: 1))
-        .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 4)
         .onTapGesture(count: 2) {
             if !post.isLiked { onLike() }
             UIImpactFeedbackGenerator(style: .medium).impactOccurred()
@@ -60,147 +121,83 @@ struct PostCardView: View {
         }
     }
 
-    // MARK: - Media background (fills card)
-    private var mediaBackground: some View {
-        Group {
-            if post.type == .video {
-                InlineFeedVideoPlayer(url: URL(string: post.fullFileUrl), feedSound: feedSound)
-            } else if let url = URL(string: post.fullFileUrl) {
-                CachedImage(url: url) { img in
-                    img.resizable()
-                        .scaledToFill()
-                } placeholder: {
-                    ShimmerBox()
-                }
-            } else {
-                Theme.bgCard
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .clipped()
-        .clipShape(RoundedRectangle(cornerRadius: Theme.radiusLg))
-    }
-
-    // MARK: - Header overlay (top)
-    private var headerOverlay: some View {
-        HStack(spacing: 10) {
-            AvatarView(name: post.authorName, color: post.authorAvatarColor, size: 38)
-                .overlay(Circle().stroke(Color.white.opacity(0.3), lineWidth: 1))
-            VStack(alignment: .leading, spacing: 1) {
-                Text(post.authorName)
-                    .font(.system(.subheadline, design: .rounded).weight(.semibold))
-                    .foregroundColor(.white)
-                    .shadow(color: .black.opacity(0.5), radius: 2)
-                Text(post.timeAgo)
-                    .font(.caption2)
-                    .foregroundColor(.white.opacity(0.85))
-                    .shadow(color: .black.opacity(0.4), radius: 1)
-            }
-            Spacer()
-            Menu {
-                if let onSave = onSave {
-                    Button { onSave() } label: {
-                        Label("Сохранить", systemImage: "square.and.arrow.down")
-                    }
-                }
-                if isMine {
-                    Button(role: .destructive, action: onDelete) {
-                        Label("Удалить", systemImage: "trash")
-                    }
-                }
-            } label: {
-                Image(systemName: "ellipsis")
-                    .foregroundColor(.white)
-                    .font(.system(size: 16, weight: .semibold))
-                    .shadow(color: .black.opacity(0.4), radius: 2)
-                    .frame(width: 36, height: 36)
-                    .background(.black.opacity(0.35))
-                    .clipShape(Circle())
-            }
-        }
-    }
-
-    // MARK: - Bottom overlay (actions + caption)
-    private var bottomOverlay: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 0) {
-                actionButton(
-                    icon: post.isLiked ? "heart.fill" : "heart",
-                    label: post.likesCount > 0 ? "\(post.likesCount)" : "",
-                    color: post.isLiked ? Theme.danger : .white,
-                    scale: post.isLiked ? 1.1 : 1.0,
-                    action: onLike
-                )
-                actionButton(
-                    icon: "bubble.right",
-                    label: post.commentsCount > 0 ? "\(post.commentsCount)" : "",
-                    color: .white,
-                    scale: 1,
-                    action: onComment
-                )
-                actionButton(
-                    icon: "arrow.2.squarepath",
-                    label: post.repostsCount > 0 ? "\(post.repostsCount)" : "",
-                    color: .white,
-                    scale: 1,
-                    action: onRepost
-                )
-                Spacer()
-            }
-
-            if !post.caption.isEmpty || post.commentsCount > 0 {
-                VStack(alignment: .leading, spacing: 4) {
-                    if !post.caption.isEmpty {
-                        (
-                            Text(post.authorName)
-                                .font(.system(.subheadline, design: .rounded).weight(.semibold))
-                            + Text(" ")
-                            + Text(post.caption)
-                                .font(.system(.subheadline, design: .rounded))
-                        )
-                        .foregroundColor(.white)
-                        .lineLimit(2)
-                        .shadow(color: .black.opacity(0.5), radius: 2)
-                    }
-                    if post.commentsCount > 0 {
-                        Button(action: onComment) {
-                            Text("Посмотреть все комментарии (\(post.commentsCount))")
-                                .font(.system(.caption, design: .rounded))
-                                .foregroundColor(.white.opacity(0.9))
-                        }
-                    }
-                }
-            }
-        }
-        .padding(.vertical, 10)
-        .padding(.horizontal, 4)
-        .background(
-            LinearGradient(
-                colors: [.clear, .black.opacity(0.6)],
-                startPoint: .top,
-                endPoint: .bottom
+    // MARK: - Action bar
+    private var actionBar: some View {
+        HStack(spacing: 0) {
+            actionButton(
+                icon: post.isLiked ? "heart.fill" : "heart",
+                label: post.likesCount > 0 ? "\(post.likesCount)" : "",
+                color: post.isLiked ? Theme.danger : Theme.textSecondary,
+                scale: post.isLiked ? 1.1 : 1.0,
+                action: onLike
             )
-        )
+            actionButton(
+                icon: "bubble.right",
+                label: post.commentsCount > 0 ? "\(post.commentsCount)" : "",
+                color: Theme.textSecondary,
+                scale: 1,
+                action: onComment
+            )
+            actionButton(
+                icon: "arrow.2.squarepath",
+                label: post.repostsCount > 0 ? "\(post.repostsCount)" : "",
+                color: Theme.textSecondary,
+                scale: 1,
+                action: onRepost
+            )
+            Spacer()
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 10)
     }
 
     private func actionButton(icon: String, label: String, color: Color, scale: CGFloat, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 5) {
                 Image(systemName: icon)
-                    .font(.system(size: 22))
+                    .font(.system(size: 20))
                     .foregroundColor(color)
                     .scaleEffect(scale)
                     .animation(.spring(response: 0.3), value: scale)
-                    .shadow(color: .black.opacity(0.4), radius: 2)
                 if !label.isEmpty {
                     Text(label)
                         .font(.system(.caption, design: .rounded).weight(.medium))
-                        .foregroundColor(.white)
-                        .shadow(color: .black.opacity(0.4), radius: 1)
+                        .foregroundColor(Theme.textSecondary)
                 }
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
+        }
+    }
+
+    // MARK: - Caption
+    @ViewBuilder
+    private var captionSection: some View {
+        if !post.caption.isEmpty || post.commentsCount > 0 {
+            VStack(alignment: .leading, spacing: 4) {
+                if !post.caption.isEmpty {
+                    Group {
+                        Text(post.authorName)
+                            .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                        + Text(" ")
+                        + Text(post.caption)
+                            .font(.system(.subheadline, design: .rounded))
+                    }
+                    .foregroundColor(Theme.textPrimary)
+                    .lineLimit(3)
+                }
+                if post.commentsCount > 0 {
+                    Button(action: onComment) {
+                        Text("Посмотреть все комментарии (\(post.commentsCount))")
+                            .font(.system(.caption, design: .rounded))
+                            .foregroundColor(Theme.textMuted)
+                    }
+                }
+            }
+            .padding(.horizontal, 14)
+            .padding(.bottom, 14)
+        } else {
+            Spacer().frame(height: 4)
         }
     }
 }
