@@ -82,15 +82,14 @@ struct VoiceMessagePlayerView: View {
 
     private func startProgressTimer() {
         progressTimer?.invalidate()
-        guard let player else { return }
-        let total = player.duration
+        guard let p = player else { return }
+        let total = p.duration
         guard total > 0 else { return }
         progressTimer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { _ in
             Task { @MainActor in
-                guard let player else { return }
-                let current = player.currentTime
+                let current = p.currentTime
                 playProgress = CGFloat(current / total)
-                if !player.isPlaying {
+                if !p.isPlaying {
                     isPlaying = false
                     playProgress = 0
                     progressTimer?.invalidate()
