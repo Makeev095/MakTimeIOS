@@ -75,24 +75,32 @@ struct ChatView: View {
                 inputFocused = false
             }
             .onChange(of: vm.messages.count) { _ in
-                scrollToBottom(proxy)
+                scrollToBottom(proxy, animated: true)
             }
             .onChange(of: keyboard.isVisible) { visible in
                 if visible {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-                        scrollToBottom(proxy)
+                        scrollToBottom(proxy, animated: true)
                     }
                 }
             }
-            .onAppear {
-                scrollToBottom(proxy)
+            .onChange(of: vm.isLoading) { loading in
+                if !loading && !vm.messages.isEmpty {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                        scrollToBottom(proxy, animated: false)
+                    }
+                }
             }
         }
     }
-    
-    private func scrollToBottom(_ proxy: ScrollViewProxy) {
+
+    private func scrollToBottom(_ proxy: ScrollViewProxy, animated: Bool) {
         guard let last = vm.messages.last else { return }
-        withAnimation(.easeOut(duration: 0.2)) {
+        if animated {
+            withAnimation(.easeOut(duration: 0.2)) {
+                proxy.scrollTo(last.id, anchor: .bottom)
+            }
+        } else {
             proxy.scrollTo(last.id, anchor: .bottom)
         }
     }

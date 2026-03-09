@@ -24,17 +24,14 @@ struct MessageBubbleView: View {
                 messageContent
 
                 // Time + read receipt
-                HStack(spacing: 4) {
+                HStack(spacing: 3) {
                     Text(message.dateFormatted)
                         .font(.system(size: 10, design: .rounded))
                         .foregroundColor(isMine ? .white.opacity(0.55) : Theme.textMuted)
                     if isMine {
-                        Image(systemName: message.read ? "checkmark.circle.fill" : "checkmark.circle")
-                            .font(.system(size: 10))
-                            .foregroundColor(message.read ? Theme.success : .white.opacity(0.4))
+                        readReceipt
                     }
                 }
-                .padding(message.type == .videoNote ? 0 : 0)
             }
             .onTapGesture(count: 2) {
                 UIImpactFeedbackGenerator(style: .light).impactOccurred()
@@ -54,6 +51,22 @@ struct MessageBubbleView: View {
 
             if !isMine { Spacer(minLength: 52) }
         }
+    }
+
+    // MARK: - Read receipt
+    private var readReceipt: some View {
+        ZStack(alignment: .leading) {
+            Image(systemName: "checkmark")
+                .font(.system(size: 9, weight: .bold))
+                .foregroundColor(message.read ? Color(hex: "34B7F1") : .white.opacity(0.4))
+            if message.read {
+                Image(systemName: "checkmark")
+                    .font(.system(size: 9, weight: .bold))
+                    .foregroundColor(Color(hex: "34B7F1"))
+                    .offset(x: 4)
+            }
+        }
+        .frame(width: 16, height: 12)
     }
 
     // MARK: - Reply preview

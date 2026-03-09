@@ -20,7 +20,7 @@ class ChatViewModel: ObservableObject {
     private let mediaService = MediaService()
     private var typingTimer: Timer?
     
-    var isRecording: Bool { mediaService.isRecording }
+    @Published var isRecording = false
     var recordingDuration: TimeInterval { mediaService.recordingDuration }
     
     init(conversation: Conversation) {
@@ -137,10 +137,15 @@ class ChatViewModel: ObservableObject {
     func startVoiceRecording() {
         do {
             try mediaService.startVoiceRecording()
-        } catch {}
+            isRecording = true
+        } catch {
+            print("Voice recording error: \(error)")
+            isRecording = false
+        }
     }
-    
+
     func stopVoiceRecording() {
+        isRecording = false
         guard let result = mediaService.stopVoiceRecording() else { return }
         Task {
             do {
@@ -151,14 +156,19 @@ class ChatViewModel: ObservableObject {
                     type: "voice",
                     fileUrl: fileUrl,
                     fileName: "voice.m4a",
-                    duration: result.duration
+                    duration: result.duration,
+                    replyToId: replyTo?.id
                 )
-            } catch {}
+                replyTo = nil
+            } catch {
+                print("Voice upload error: \(error)")
+            }
             try? FileManager.default.removeItem(at: result.url)
         }
     }
-    
+
     func cancelVoiceRecording() {
+        isRecording = false
         mediaService.cancelVoiceRecording()
     }
 

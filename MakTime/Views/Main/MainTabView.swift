@@ -18,15 +18,11 @@ struct MainTabView: View {
             NavigationStack {
                 TabView(selection: $selectedTab) {
                     chatsTab
-                        .tabItem {
-                            Label("Чаты", systemImage: "message.fill")
-                        }
+                        .tabItem { Label("Чаты", systemImage: "message.fill") }
                         .tag(0)
 
                     FeedView()
-                        .tabItem {
-                            Label("Лента", systemImage: "square.grid.2x2.fill")
-                        }
+                        .tabItem { Label("Лента", systemImage: "square.grid.2x2.fill") }
                         .tag(1)
 
                     ContactsView { user in
@@ -37,15 +33,11 @@ struct MainTabView: View {
                             }
                         }
                     }
-                    .tabItem {
-                        Label("Контакты", systemImage: "person.2.fill")
-                    }
+                    .tabItem { Label("Контакты", systemImage: "person.2.fill") }
                     .tag(2)
 
                     SettingsView()
-                        .tabItem {
-                            Label("Настройки", systemImage: "gearshape.fill")
-                        }
+                        .tabItem { Label("Настройки", systemImage: "gearshape.fill") }
                         .tag(3)
                 }
                 .tint(Theme.accent)
@@ -71,6 +63,7 @@ struct MainTabView: View {
                 }
             }
 
+            // Incoming call overlay
             if let incoming = socketService.incomingCall, callTarget == nil {
                 IncomingCallOverlay(
                     call: incoming,
@@ -90,6 +83,7 @@ struct MainTabView: View {
                 )
             }
 
+            // Video call overlay — always on top, above modals
             if let target = callTarget {
                 VideoCallView(
                     target: target,
@@ -102,11 +96,11 @@ struct MainTabView: View {
                     },
                     pipManager: pipManager
                 )
+                .zIndex(999)
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
             if callTarget != nil {
-                // Small delay so the PiP controller finishes setup before activation
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
                     pipManager.startPiP()
                 }
@@ -122,6 +116,27 @@ struct MainTabView: View {
                 callMinimized = false
             }
         }
+    }
+
+    private var chatsTab: some View {
+        VStack(spacing: 0) {
+            StoryBarView(
+                onViewStories: { users, idx in
+                    storyViewData = (users, idx)
+                    showStoryViewer = true
+                },
+                onAddStory: { showStoryUpload = true }
+            )
+
+            Divider().background(Theme.border)
+
+            ConversationListView(
+                selectedConversation: $selectedConversation,
+                onStartCall: { userId, name, convId in
+                    callTarget = CallTarget(userId: userId, name: name, conversationId: convId, isInitiator: true)
+                }
+            )
+        }
         .fullScreenCover(isPresented: $showStoryViewer) {
             if let data = storyViewData {
                 StoryViewerView(
@@ -135,27 +150,6 @@ struct MainTabView: View {
             StoryUploadView(
                 onClose: { showStoryUpload = false },
                 onPublished: { showStoryUpload = false }
-            )
-        }
-    }
-    
-    private var chatsTab: some View {
-        VStack(spacing: 0) {
-            StoryBarView(
-                onViewStories: { users, idx in
-                    storyViewData = (users, idx)
-                    showStoryViewer = true
-                },
-                onAddStory: { showStoryUpload = true }
-            )
-            
-            Divider().background(Theme.border)
-            
-            ConversationListView(
-                selectedConversation: $selectedConversation,
-                onStartCall: { userId, name, convId in
-                    callTarget = CallTarget(userId: userId, name: name, conversationId: convId, isInitiator: true)
-                }
             )
         }
     }
