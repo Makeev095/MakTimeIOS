@@ -170,10 +170,10 @@ struct FeedView: View {
                         onRepost: { vm.repost(post: post) },
                         onDelete: { vm.deletePost(post) },
                         onVideoTap: post.type == .video ? {
-                            // Find index of this post in video-only list
                             reelsStartIndex = videoPosts.firstIndex(where: { $0.id == post.id }) ?? 0
                             showReels = true
-                        } : nil
+                        } : nil,
+                        onSave: { MediaSaver.save(urlString: post.fullFileUrl, isVideo: post.type == .video) }
                     )
                     .padding(.horizontal, 12)
                 }

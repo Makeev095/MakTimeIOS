@@ -1,4 +1,5 @@
 import SwiftUI
+import AVFoundation
 
 struct PostCardView: View {
     let post: Post
@@ -8,6 +9,7 @@ struct PostCardView: View {
     let onRepost: () -> Void
     let onDelete: () -> Void
     var onVideoTap: (() -> Void)? = nil
+    var onSave: (() -> Void)? = nil
 
     @State private var showDoubleTapHeart = false
     @State private var heartScale: CGFloat = 0
@@ -41,18 +43,23 @@ struct PostCardView: View {
                     .foregroundColor(Theme.textMuted)
             }
             Spacer()
-            if isMine {
-                Menu {
+            Menu {
+                if let onSave = onSave {
+                    Button { onSave() } label: {
+                        Label("Сохранить", systemImage: "square.and.arrow.down")
+                    }
+                }
+                if isMine {
                     Button(role: .destructive, action: onDelete) {
                         Label("Удалить", systemImage: "trash")
                     }
-                } label: {
-                    Image(systemName: "ellipsis")
-                        .foregroundColor(Theme.textSecondary)
-                        .padding(10)
-                        .background(Theme.bgHover)
-                        .clipShape(Circle())
                 }
+            } label: {
+                Image(systemName: "ellipsis")
+                    .foregroundColor(Theme.textSecondary)
+                    .padding(10)
+                    .background(Theme.bgHover)
+                    .clipShape(Circle())
             }
         }
         .padding(.horizontal, 14)
@@ -65,7 +72,11 @@ struct PostCardView: View {
         ZStack {
             Group {
                 if post.type == .video {
-                    videoPreview
+                    InlineFeedVideoPlayer(url: URL(string: post.fullFileUrl))
+                        .aspectRatio(1, contentMode: .fill)
+                        .frame(maxWidth: .infinity)
+                        .frame(minHeight: 280)
+                        .clipped()
                 } else if let url = URL(string: post.fullFileUrl) {
                     CachedImage(url: url) { img in
                         img.resizable()
@@ -83,7 +94,6 @@ struct PostCardView: View {
             .clipShape(RoundedRectangle(cornerRadius: Theme.radius))
             .padding(.horizontal, 10)
 
-            // Double-tap heart
             if showDoubleTapHeart {
                 Image(systemName: "heart.fill")
                     .font(.system(size: 80))
@@ -108,51 +118,6 @@ struct PostCardView: View {
                 }
             }
         }
-    }
-
-    /// Video thumbnail — static gradient placeholder with play icon; tapping opens Reels
-    private var videoPreview: some View {
-        Button(action: { onVideoTap?() }) {
-            ZStack {
-                // Dark gradient placeholder (no live AVPlayer in feed)
-                LinearGradient(
-                    colors: [Color(hex: "111126"), Color(hex: "1C1C3A")],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .frame(maxWidth: .infinity)
-                .frame(height: 280)
-
-                // Play icon
-                ZStack {
-                    Circle()
-                        .fill(.white.opacity(0.15))
-                        .frame(width: 72, height: 72)
-                    Image(systemName: "play.fill")
-                        .font(.system(size: 30))
-                        .foregroundColor(.white)
-                        .offset(x: 3)
-                }
-                .shadow(color: .black.opacity(0.4), radius: 12)
-
-                // "Reels" badge
-                VStack {
-                    HStack {
-                        Spacer()
-                        Label("Reels", systemImage: "play.rectangle.fill")
-                            .font(.caption2.weight(.semibold))
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(.black.opacity(0.5))
-                            .clipShape(Capsule())
-                            .padding(8)
-                    }
-                    Spacer()
-                }
-            }
-        }
-        .buttonStyle(.plain)
     }
 
     // MARK: - Action bar
@@ -185,13 +150,7 @@ struct PostCardView: View {
         .padding(.vertical, 10)
     }
 
-    private func actionButton(
-        icon: String,
-        label: String,
-        color: Color,
-        scale: CGFloat,
-        action: @escaping () -> Void
-    ) -> some View {
+    private func actionButton(icon: String, label: String, color: Color, scale: CGFloat, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 5) {
                 Image(systemName: icon)
@@ -239,5 +198,156 @@ struct PostCardView: View {
         } else {
             Spacer().frame(height: 4)
         }
+    }
+}
+
+// MARK: - Inline feed video player (autoplay, loop 3x, mute toggle)
+
+struct InlineFeedVideoPlayer: View {
+    let url: URL?
+    @StateObject private var vm = InlineFeedVideoVM()
+
+    var body: some View {
+        ZStack(alignment: .bottomTrailing) {
+            if let player = vm.player {
+                FeedAVPlayerView(player: player)
+            } else {
+                ShimmerBox()
+            }
+
+            // Mute button
+            Button {
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                vm.toggleMute()
+            } label: {
+                Image(systemName: vm.isMuted ? "speaker.slash.fill" : "speaker.wave.2.fill")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(.white)
+                    .frame(width: 30, height: 30)
+                    .background(.black.opacity(0.5))
+                    .clipShape(Circle())
+            }
+            .padding(10)
+
+            // Play/pause overlay when paused manually
+            if vm.isPausedByUser {
+                ZStack {
+                    Color.black.opacity(0.25)
+                    Image(systemName: "play.fill")
+                        .font(.system(size: 36))
+                        .foregroundColor(.white.opacity(0.85))
+                }
+                .onTapGesture { vm.togglePlayPause() }
+            }
+        }
+        .onTapGesture {
+            vm.togglePlayPause()
+        }
+        .onAppear {
+            if let url = url { vm.load(url: url) }
+            vm.play()
+        }
+        .onDisappear {
+            vm.pause()
+        }
+    }
+}
+
+@MainActor
+private final class InlineFeedVideoVM: ObservableObject {
+    @Published var player: AVPlayer?
+    @Published var isMuted = true
+    @Published var isPausedByUser = false
+
+    private var loopCount = 0
+    private let maxLoops = 3
+    private var loopObserver: Any?
+    private var currentURL: URL?
+
+    func load(url: URL) {
+        guard url != currentURL else { return }
+        currentURL = url
+
+        if let obs = loopObserver { NotificationCenter.default.removeObserver(obs) }
+
+        let item = AVPlayerItem(url: url)
+        let p = AVPlayer(playerItem: item)
+        p.isMuted = true
+        p.actionAtItemEnd = .none
+
+        loopCount = 0
+        loopObserver = NotificationCenter.default.addObserver(
+            forName: .AVPlayerItemDidPlayToEndTime,
+            object: item,
+            queue: .main
+        ) { [weak self, weak p] _ in
+            guard let p else { return }
+            Task { @MainActor [weak self] in
+                guard let self else { return }
+                self.loopCount += 1
+                if self.loopCount < self.maxLoops {
+                    p.seek(to: .zero)
+                    p.play()
+                } else {
+                    p.pause()
+                    p.seek(to: .zero)
+                }
+            }
+        }
+
+        player = p
+
+        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [.mixWithOthers])
+    }
+
+    func play() {
+        isPausedByUser = false
+        loopCount = 0
+        player?.seek(to: .zero)
+        player?.play()
+    }
+
+    func pause() {
+        player?.pause()
+    }
+
+    func togglePlayPause() {
+        if isPausedByUser {
+            isPausedByUser = false
+            loopCount = 0
+            player?.play()
+        } else {
+            isPausedByUser = true
+            player?.pause()
+        }
+    }
+
+    func toggleMute() {
+        isMuted.toggle()
+        player?.isMuted = isMuted
+    }
+
+    deinit {
+        if let obs = loopObserver { NotificationCenter.default.removeObserver(obs) }
+    }
+}
+
+private struct FeedAVPlayerView: UIViewRepresentable {
+    let player: AVPlayer
+
+    func makeUIView(context: Context) -> FeedPlayerUIView {
+        let v = FeedPlayerUIView()
+        v.playerLayer.player = player
+        v.playerLayer.videoGravity = .resizeAspectFill
+        return v
+    }
+    func updateUIView(_ uiView: FeedPlayerUIView, context: Context) {
+        uiView.playerLayer.player = player
+    }
+
+    final class FeedPlayerUIView: UIView {
+        override class var layerClass: AnyClass { AVPlayerLayer.self }
+        var playerLayer: AVPlayerLayer { layer as! AVPlayerLayer }
+        override func layoutSubviews() { super.layoutSubviews(); playerLayer.frame = bounds }
     }
 }

@@ -23,6 +23,7 @@ struct Conversation: Codable, Identifiable, Equatable, Hashable {
         case "voice": return "🎤 Голосовое сообщение"
         case "image": return "📷 Фото"
         case "video": return "🎥 Видео"
+        case "videoNote": return "📹 Кружок"
         case "file": return "📎 Файл"
         default: return msg
         }

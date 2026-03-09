@@ -43,6 +43,12 @@ struct MessageBubbleView: View {
             }
             .confirmationDialog("Действия", isPresented: $showActions) {
                 Button("Ответить") { onReply() }
+                if message.type == .image || message.type == .video || message.type == .videoNote {
+                    Button("Сохранить") {
+                        guard let urlStr = message.fullFileUrl else { return }
+                        MediaSaver.save(urlString: urlStr, isVideo: message.type != .image)
+                    }
+                }
                 if isMine {
                     Button("Удалить", role: .destructive) { onDelete() }
                 }

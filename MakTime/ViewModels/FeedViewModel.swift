@@ -60,9 +60,13 @@ class FeedViewModel: ObservableObject {
     }
 
     func deletePost(_ post: Post) {
-        posts.removeAll { $0.id == post.id }
         Task {
-            try? await APIService.shared.deletePost(postId: post.id)
+            do {
+                try await APIService.shared.deletePost(postId: post.id)
+                posts.removeAll { $0.id == post.id }
+            } catch {
+                print("Delete post error: \(error)")
+            }
         }
     }
 

@@ -207,10 +207,13 @@ struct StoryViewerView: View {
 
     @ViewBuilder
     private func storyMedia(_ story: Story, size: CGSize) -> some View {
-        if story.type == .video, let url = URL(string: story.fullFileUrl) {
+        if story.type == .video, let url = URL(string: story.fullFileUrl), !story.fileUrl.isEmpty {
             VideoPlayer(player: AVPlayer(url: url))
                 .frame(width: size.width, height: size.height)
-        } else if let url = URL(string: story.fullFileUrl) {
+                .onAppear {
+                    if !mediaReady { mediaReady = true; startTimer() }
+                }
+        } else if let url = URL(string: story.fullFileUrl), !story.fileUrl.isEmpty {
             let bgColor = story.bgColor.isEmpty ? "1A1A2E" : story.bgColor
             ZStack {
                 Color(hex: bgColor).ignoresSafeArea()
@@ -231,6 +234,15 @@ struct StoryViewerView: View {
                         ProgressView().tint(.white)
                     }
                     .frame(width: size.width, height: size.height)
+                    .onAppear {
+                        // Fallback: if image doesn't load within 3s, start timer anyway
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                            if !mediaReady {
+                                mediaReady = true
+                                startTimer()
+                            }
+                        }
+                    }
                 }
             }
             .frame(width: size.width, height: size.height)
