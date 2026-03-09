@@ -35,6 +35,7 @@
 		6623BC8D24410455711D9B3A /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BD3371D6D6497637C6958A9 /* User.swift */; };
 		663B20C5A6B9BF8EDD219E91 /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CAC9EE7F7A348C7A89463A9 /* SettingsViewModel.swift */; };
 		67B380C81153BC205426C984 /* StoryViewerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 966B7B2195382157EB000AD8 /* StoryViewerView.swift */; };
+		69D27C2CCE434FA01A982C7B /* ReelsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55B741B8BCE89A2C224D58DC /* ReelsView.swift */; };
 		6F62A8BC62273BC3F488F51E /* StoriesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C907CB5690416B2D7FDF8EC /* StoriesViewModel.swift */; };
 		74F43D402E64EBAA6630808C /* VideoNotePlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06EB6E347A816959AD1FFEBD /* VideoNotePlayerView.swift */; };
 		7B3E7331E7C2750475DBC371 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1A89FC01C9C62C84EA4D64D /* Theme.swift */; };
@@ -78,6 +79,7 @@
 		4C0D373CB3DF0676AAE7D8C7 /* ConversationListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationListView.swift; sourceTree = "<group>"; };
 		50B0B629BDBD3CB38F4AA5D6 /* MediaService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaService.swift; sourceTree = "<group>"; };
 		52A6E7DBB31B45CE0EAD97BD /* FeedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedView.swift; sourceTree = "<group>"; };
+		55B741B8BCE89A2C224D58DC /* ReelsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReelsView.swift; sourceTree = "<group>"; };
 		5C907CB5690416B2D7FDF8EC /* StoriesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoriesViewModel.swift; sourceTree = "<group>"; };
 		5D144D2B4EAC9C83FF05316E /* PostCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostCardView.swift; sourceTree = "<group>"; };
 		63152E21739DC55AB47263F5 /* IncomingCall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IncomingCall.swift; sourceTree = "<group>"; };
@@ -310,6 +312,7 @@
 				80283A7DD81F19446892136D /* CreatePostView.swift */,
 				52A6E7DBB31B45CE0EAD97BD /* FeedView.swift */,
 				5D144D2B4EAC9C83FF05316E /* PostCardView.swift */,
+				55B741B8BCE89A2C224D58DC /* ReelsView.swift */,
 			);
 			path = Feed;
 			sourceTree = "<group>";
@@ -437,6 +440,7 @@
 				8C63A5425E8F802B8240CF44 /* MessageBubbleView.swift in Sources */,
 				4449AC908542119FA1DD59D6 /* Post.swift in Sources */,
 				009B9C3A33E42E9EC99A871B /* PostCardView.swift in Sources */,
+				69D27C2CCE434FA01A982C7B /* ReelsView.swift in Sources */,
 				7CBAF7890B022E0B5E594310 /* SearchBarView.swift in Sources */,
 				FEB3095F8E9B7E9C166D5D72 /* SettingsView.swift in Sources */,
 				663B20C5A6B9BF8EDD219E91 /* SettingsViewModel.swift in Sources */,

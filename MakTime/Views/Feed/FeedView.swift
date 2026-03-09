@@ -5,6 +5,11 @@ struct FeedView: View {
     @EnvironmentObject var authService: AuthService
     @State private var showCreatePost = false
     @State private var selectedPostForComments: Post?
+    @State private var showReels = false
+    @State private var reelsStartIndex = 0
+
+    /// Only video posts, used for Reels
+    private var videoPosts: [Post] { vm.posts.filter { $0.type == .video } }
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -19,6 +24,24 @@ struct FeedView: View {
                             .foregroundColor(Theme.textPrimary)
                     }
                     Spacer()
+
+                    // Reels button
+                    if !videoPosts.isEmpty {
+                        Button {
+                            reelsStartIndex = 0
+                            showReels = true
+                        } label: {
+                            Image(systemName: "play.rectangle.fill")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(.white)
+                                .frame(width: 36, height: 36)
+                                .background(Theme.bgTertiary)
+                                .clipShape(Circle())
+                        }
+                        .padding(.trailing, 8)
+                    }
+
+                    // New post button
                     Button {
                         showCreatePost = true
                     } label: {
@@ -46,6 +69,17 @@ struct FeedView: View {
         }
         .sheet(item: $selectedPostForComments) { post in
             CommentsView(post: post)
+        }
+        .fullScreenCover(isPresented: $showReels) {
+            ReelsView(
+                posts: videoPosts,
+                startIndex: reelsStartIndex,
+                onClose: { showReels = false },
+                onLike: { post in vm.toggleLike(post: post) },
+                onComment: { post in selectedPostForComments = post; showReels = false },
+                onRepost: { post in vm.repost(post: post) }
+            )
+            .environmentObject(authService)
         }
     }
 
@@ -134,7 +168,12 @@ struct FeedView: View {
                         onLike: { vm.toggleLike(post: post) },
                         onComment: { selectedPostForComments = post },
                         onRepost: { vm.repost(post: post) },
-                        onDelete: { vm.deletePost(post) }
+                        onDelete: { vm.deletePost(post) },
+                        onVideoTap: post.type == .video ? {
+                            // Find index of this post in video-only list
+                            reelsStartIndex = videoPosts.firstIndex(where: { $0.id == post.id }) ?? 0
+                            showReels = true
+                        } : nil
                     )
                     .padding(.horizontal, 12)
                 }

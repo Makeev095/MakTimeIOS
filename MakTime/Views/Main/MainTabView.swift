@@ -106,7 +106,10 @@ struct MainTabView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
             if callTarget != nil {
-                pipManager.startPiP()
+                // Small delay so the PiP controller finishes setup before activation
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                    pipManager.startPiP()
+                }
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in

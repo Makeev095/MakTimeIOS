@@ -1,5 +1,4 @@
 import SwiftUI
-import AVKit
 
 struct PostCardView: View {
     let post: Post
@@ -8,6 +7,7 @@ struct PostCardView: View {
     let onComment: () -> Void
     let onRepost: () -> Void
     let onDelete: () -> Void
+    var onVideoTap: (() -> Void)? = nil
 
     @State private var showDoubleTapHeart = false
     @State private var heartScale: CGFloat = 0
@@ -64,9 +64,8 @@ struct PostCardView: View {
     private var mediaSection: some View {
         ZStack {
             Group {
-                if post.type == .video, let url = URL(string: post.fullFileUrl) {
-                    VideoPlayer(player: AVPlayer(url: url))
-                        .aspectRatio(1, contentMode: .fill)
+                if post.type == .video {
+                    videoPreview
                 } else if let url = URL(string: post.fullFileUrl) {
                     CachedImage(url: url) { img in
                         img.resizable()
@@ -109,6 +108,51 @@ struct PostCardView: View {
                 }
             }
         }
+    }
+
+    /// Video thumbnail — static gradient placeholder with play icon; tapping opens Reels
+    private var videoPreview: some View {
+        Button(action: { onVideoTap?() }) {
+            ZStack {
+                // Dark gradient placeholder (no live AVPlayer in feed)
+                LinearGradient(
+                    colors: [Color(hex: "111126"), Color(hex: "1C1C3A")],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .frame(maxWidth: .infinity)
+                .frame(height: 280)
+
+                // Play icon
+                ZStack {
+                    Circle()
+                        .fill(.white.opacity(0.15))
+                        .frame(width: 72, height: 72)
+                    Image(systemName: "play.fill")
+                        .font(.system(size: 30))
+                        .foregroundColor(.white)
+                        .offset(x: 3)
+                }
+                .shadow(color: .black.opacity(0.4), radius: 12)
+
+                // "Reels" badge
+                VStack {
+                    HStack {
+                        Spacer()
+                        Label("Reels", systemImage: "play.rectangle.fill")
+                            .font(.caption2.weight(.semibold))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(.black.opacity(0.5))
+                            .clipShape(Capsule())
+                            .padding(8)
+                    }
+                    Spacer()
+                }
+            }
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Action bar
