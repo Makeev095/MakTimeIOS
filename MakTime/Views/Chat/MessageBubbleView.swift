@@ -163,26 +163,11 @@ struct MessageBubbleView: View {
 
     // MARK: - Voice
     private var voiceContent: some View {
-        HStack(spacing: 10) {
-            Image(systemName: "waveform")
-                .font(.title3)
-                .foregroundStyle(isMine ? AnyShapeStyle(Color.white) : AnyShapeStyle(Theme.gradientAccent))
-            VStack(alignment: .leading, spacing: 2) {
-                if let dur = message.duration {
-                    Text(formatDuration(dur))
-                        .font(.system(.caption, design: .rounded).weight(.medium))
-                        .foregroundColor(isMine ? .white : Theme.textPrimary)
-                }
-                Text("Голосовое сообщение")
-                    .font(.system(size: 10, design: .rounded))
-                    .foregroundColor(isMine ? .white.opacity(0.65) : Theme.textMuted)
-            }
-        }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 12)
-        .background(isMine ? AnyShapeStyle(Theme.gradientSent) : AnyShapeStyle(Theme.bgHover))
-        .clipShape(RoundedRectangle(cornerRadius: Theme.radiusLg))
-        .overlay(RoundedRectangle(cornerRadius: Theme.radiusLg).stroke(Theme.glassBorder))
+        VoiceMessagePlayerView(
+            url: message.fullFileUrl.flatMap { URL(string: $0) },
+            duration: message.duration,
+            isMine: isMine
+        )
     }
 
     // MARK: - Video Note (circle)

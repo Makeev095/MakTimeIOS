@@ -9,6 +9,7 @@ class VideoCallViewModel: ObservableObject {
     @Published var status: CallStatus = .connecting
     @Published var isMuted = false
     @Published var isVideoOff = false
+    @Published var isSpeakerOn = true
     @Published var duration: Int = 0
     @Published var remoteVideoTrack: RTCVideoTrack?
     
@@ -51,6 +52,7 @@ class VideoCallViewModel: ObservableObject {
         self.socketService = socketService
         webRTCService.delegate = self
         webRTCService.setup()
+        configureAudioSession(speaker: true)
         
         socketService.callAccepted
             .receive(on: DispatchQueue.main)
@@ -222,6 +224,20 @@ class VideoCallViewModel: ObservableObject {
     
     func switchCamera() {
         webRTCService.switchCamera()
+    }
+
+    func toggleSpeaker() {
+        isSpeakerOn.toggle()
+        configureAudioSession(speaker: isSpeakerOn)
+    }
+
+    private func configureAudioSession(speaker: Bool) {
+        let ctx = AVAudioSession.sharedInstance()
+        let options: AVAudioSession.CategoryOptions = speaker
+            ? [.defaultToSpeaker, .allowBluetooth]
+            : [.allowBluetooth]
+        try? ctx.setCategory(.playAndRecord, mode: .voiceChat, options: options)
+        try? ctx.setActive(true)
     }
 }
 
